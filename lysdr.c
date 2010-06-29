@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     audio_start(sdr);
     
     sdr->loPhase = cexp((I * -2.0 * 3.14159) / sdr->samplerate);
-    make_filter(sdr->samplerate, 250, 3082, 1863);
+    make_filter(sdr->samplerate, 250, 3100, 1850);
     sdr->loVector = 1;
     sdr->agcGain = 0;
     sdr->agcPeak = 0;

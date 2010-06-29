@@ -11,5 +11,9 @@ You will need to connect some sort of IQ source to the inputs - this can
 be either a real live soundcard with some SDR hardware, or a prerecorded
 IQ file.
 
+Drag the slider to tune the radio.  The number above the slider is the
+frequency offset in Hz from the SDR centre (local oscillator) frequency.
+Filter bandwith is hardcoded at 3.1kHz, for a passband of 300Hz to 3.4kHz
+with 250 taps in the FIR.
 At present lysdr only demodulates LSB, but can be adapted for USB.
 
