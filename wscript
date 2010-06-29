@@ -13,9 +13,11 @@ def set_options(opt):
 
 def configure(conf):
     conf.check_tool('compiler_cc')
+    conf.check(header_name='stdlib.h')
+    conf.check(header_name='math.h')
+    
     conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.6.0', mandatory=True, args='--cflags --libs')
-    #conf.env.append_value('CCFLAGS') #, '-DHAVE_CONFIG_H')
-    #conf.write_config_header('config.h')
+    conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.118.0', args = '--cflags --libs')
 
 def build(bld):
     # 1. A simple program
@@ -23,6 +25,6 @@ def build(bld):
         features = 'cc cprogram',
         source = bld.path.ant_glob('**/*.c'),
         target = 'gui',
-        uselib = "GTK",
+        uselib = "GTK JACK",
         includes = '. /usr/include')
 
