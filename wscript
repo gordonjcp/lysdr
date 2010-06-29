@@ -2,7 +2,7 @@
 
 # the following two variables are used by the target "waf dist"
 VERSION='0.0.1'
-APPNAME='cc_test'
+APPNAME='lysdr'
 
 # these variables are mandatory ('/' are converted automatically)
 top = '.'
