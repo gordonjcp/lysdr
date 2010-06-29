@@ -19,7 +19,6 @@ static double cFilterQ[MAX_FILTER_SIZE];	// Digital filter coefficients
 static double bufFilterI[MAX_FILTER_SIZE];	// Digital filter sample buffer
 static double bufFilterQ[MAX_FILTER_SIZE];	// Digital filter sample buffer
 
-
 void make_filter(rate, N, bw, centre) {
     // rate is currently 48000 by default
     // N - filter length
@@ -36,9 +35,10 @@ void make_filter(rate, N, bw, centre) {
     for (k=-N/2; k<N/2; k++) {
         if (k==0) z=(float)K/N;
         else z=1.0/N*sin(M_PI*k*K/N)/sin(M_PI*k/N);
-        //w = 0.5 + 0.5 * cos(2.0 * M_PI * k / N); // Hanning window is simplest
+        // apply a windowing function.  I can't hear any difference...
+        //w = 0.5 + 0.5 * cos(2.0 * M_PI * k / N); // Hanning window
         w = 0.42 + 0.5 * cos(2.0 * M_PI * k / N) + 0.08 * cos(4. * M_PI * k / N); // Blackman window
-        //w=1;
+        //w=1; // No window
         z *= w; 
         z *= 2*cexp(-1*I * tune * k);
         cFilterI[i] = creal(z);
@@ -70,7 +70,7 @@ int sdr_process(SDR_DATA *sdr) {
     	sdr->loVector *= sdr->loPhase;
 	}
 	
-/*
+
 	// apply the FIR filter
     for (i = 0; i < sdr->size; i++) {
         c = sdr->iqSample[i];
@@ -87,7 +87,7 @@ int sdr_process(SDR_DATA *sdr) {
 		sdr->iqSample[i] = accI + I * accQ;
 		if (++indexFilter >= sizeFilter) indexFilter = 0;
 	}
-*/	
+
     // this demodulates LSB
     for (i=0; i<sdr->size; i++) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
