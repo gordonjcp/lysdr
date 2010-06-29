@@ -14,8 +14,8 @@ def set_options(opt):
 def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.6.0', mandatory=True, args='--cflags --libs')
-    conf.env.append_value('CCFLAGS', '-DHAVE_CONFIG_H')
-    conf.write_config_header('config.h')
+    #conf.env.append_value('CCFLAGS') #, '-DHAVE_CONFIG_H')
+    #conf.write_config_header('config.h')
 
 def build(bld):
     # 1. A simple program

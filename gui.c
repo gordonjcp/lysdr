@@ -1,6 +1,4 @@
-/*
- gui.c
- */
+/* gui.c */
 
 #include <math.h>
 #include <complex.h> 
@@ -36,7 +34,7 @@ void gui_display()
     GtkWidget *waterfall;
     GtkWidget *vbox;
     GtkWidget *tuneslider;
-    GtkAdjustment *tuning;
+    GtkObject *tuning;
 
 	gtk_window_set_title(GTK_WINDOW(mainWindow), "lysdr");
 	gtk_window_set_position(GTK_WINDOW(mainWindow), GTK_WIN_POS_CENTER_ALWAYS);
@@ -46,7 +44,7 @@ void gui_display()
     gtk_container_add(GTK_CONTAINER(mainWindow), vbox);
 
     tuning = gtk_adjustment_new(0, -22050, 22050, 1, 0, 0);
-    tuneslider = gtk_hscale_new(tuning);
+    tuneslider = gtk_hscale_new(GTK_ADJUSTMENT(tuning));
     gtk_box_pack_start(GTK_BOX(vbox), tuneslider, TRUE, TRUE, 0);
 
     label = gtk_label_new (NULL);
@@ -61,8 +59,3 @@ void gui_display()
     
 }
 
-int main(int argc, char *argv[]) {
-    gtk_init(&argc, &argv);
-    gui_display();
-    gtk_main();
-}
