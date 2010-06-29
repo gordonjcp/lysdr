@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     sdr = (SDR_DATA *)malloc(sizeof(SDR_DATA));
     audio_start(sdr);
     
-    sdr->loPhase = cexp((I * -2.0 * 3.14159 * -16750) / sdr->samplerate);
+    sdr->loPhase = cexp((I * -2.0 * 3.14159) / sdr->samplerate);
     make_filter(sdr->samplerate, 250, 3082, 1863);
     sdr->loVector = 1;
     sdr->agcGain = 0;
@@ -24,7 +24,9 @@ int main(int argc, char *argv[]) {
         
     audio_connect(sdr);
     gtk_init(&argc, &argv);
-    gui_display();
+    
+    gui_display(sdr);
+        
     gtk_main();
     audio_stop(sdr);
     free(sdr);

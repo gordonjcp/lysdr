@@ -6,6 +6,7 @@
 #define __SDR_H
 
 #include <complex.h>
+#include <gtk/gtk.h>
 
 typedef struct {
     complex *iqSample;  // the array of incoming samples
@@ -13,6 +14,8 @@ typedef struct {
     complex loPhase;    // local oscillator phase angle (sets tuning)
     double *output;     // pointer to output samples
     
+    GtkObject *tuning;  // adjustment for tuning
+        
     // things to keep track of between callbacks
     complex dc_remove;
     float agcPeak;
