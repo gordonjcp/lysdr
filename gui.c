@@ -10,9 +10,12 @@
     GtkWidget *label;
     GtkWidget *progress;
 
-static void tuning_changed(GtkWidget *widget, gpointer data) {
-    g_print("%f\n", GTK_ADJUSTMENT(widget)->value);    
+static void tuning_changed(GtkWidget *widget, gpointer psdr) {
+    SDR_DATA *sdr;
+    sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
+    float tune = GTK_ADJUSTMENT(widget)->value;
 
+    sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->samplerate);
 }
 void gui_display(SDR_DATA *sdr)
 {
@@ -32,7 +35,7 @@ void gui_display(SDR_DATA *sdr)
 
     // tuning scale
     tune_max = (float)sdr->samplerate;
-    sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 1, 0, 0);
+    sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 10, 100, 0);
     tuneslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->tuning));
     gtk_box_pack_start(GTK_BOX(vbox), tuneslider, TRUE, TRUE, 0);
 
@@ -46,7 +49,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
     gtk_widget_show_all(mainWindow);
     
-    gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
+    gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     
 }
 
