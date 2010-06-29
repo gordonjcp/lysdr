@@ -13,7 +13,7 @@ SDR_DATA *sdr;
 int main(int argc, char *argv[]) {
     printf("lysdr starting\n");
     
-    sdr = (SDR_DATA *)malloc(sizeof(SDR_DATA));
+    sdr = malloc(sizeof(SDR_DATA));
     audio_start(sdr);
     
     sdr->loPhase = cexp((I * -2.0 * 3.14159) / sdr->samplerate);
