@@ -19,7 +19,7 @@ static double cFilterQ[MAX_FILTER_SIZE];	// Digital filter coefficients
 static double bufFilterI[MAX_FILTER_SIZE];	// Digital filter sample buffer
 static double bufFilterQ[MAX_FILTER_SIZE];	// Digital filter sample buffer
 
-void make_filter(rate, N, bw, centre) {
+void make_filter(float rate, int N, float bw, float centre) {
     // rate is currently 48000 by default
     // N - filter length
     // bw = bandwidth
@@ -29,7 +29,6 @@ void make_filter(rate, N, bw, centre) {
     float w;
     complex z;
     int i=0, k;
-
     float tune = 2.0 * M_PI * centre / rate;
     
     for (k=-N/2; k<N/2; k++) {

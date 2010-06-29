@@ -15,6 +15,8 @@ typedef struct {
     double *output;     // pointer to output samples
     
     GtkObject *tuning;  // adjustment for tuning
+    GtkObject *lp_tune; // adjustment for filter lowpass
+    GtkObject *hp_tune; // adjustment for filter highpass
         
     // things to keep track of between callbacks
     complex dc_remove;
@@ -26,5 +28,5 @@ typedef struct {
 } SDR_DATA;
 
 int sdr_process(SDR_DATA *sdr);
-
+void make_filter(float rate, int N, float bw, float centre);
 #endif
