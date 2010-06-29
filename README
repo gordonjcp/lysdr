@@ -1,0 +1,15 @@
+lysdr - simple software-defined radio
+
+Requirements: gtk and jack, waf to build
+
+1. Configure with "waf configure"
+2. Build with "waf build"
+3. Run with "./build/default/gui"
+
+On startup, lysdr will connect its output to the jack output ports.
+You will need to connect some sort of IQ source to the inputs - this can
+be either a real live soundcard with some SDR hardware, or a prerecorded
+IQ file.
+
+At present lysdr only demodulates LSB, but can be adapted for USB.
+
