@@ -17,15 +17,15 @@ static jack_client_t *client;
 static jack_status_t status;
 static const char *client_name = "lysdr";
 
-static int audio_process(jack_nframes_t nframes, void *ptr) {
+static int audio_process(jack_nframes_t nframes, void *psdr) {
     // actually kick off processing the samples
-    //jack_default_audio_sample_t *ii, *qq, *L, *R;
-    //int i, n;
+    jack_default_audio_sample_t *ii, *qq, *L, *R;
+    int i, n;
     
-    //SDR_DATA *sdr;
-    //sdr = (SDR_DATA *) vsdr;
-    //printf("%x\n",vsdr);
-    /*
+    SDR_DATA *sdr;
+    sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
+
+    
     // get all four buffers
 	ii = jack_port_get_buffer (I_in, nframes);
 	qq = jack_port_get_buffer (Q_in, nframes);
@@ -39,14 +39,18 @@ static int audio_process(jack_nframes_t nframes, void *ptr) {
     //    sdr->iqSample[i] = qq[i] + I * ii[i]; // I on right
     }
     // actually run the SDR for a frame
-    //sdr_process(sdr);
+    sdr_process(sdr);
+    
+    //for(i=0; i<nframes; i++) {
+    //    sdr->output[i]=ii[i];
+    //}
     
     // copy the frames to the output
     for(i = 0; i < nframes; i++) {
         L[i]=sdr->output[i];
         R[i]=sdr->output[i];
     }
-    */
+
     // we're happy, return okay
     return 0;
 }
@@ -82,16 +86,15 @@ int audio_stop(SDR_DATA *sdr) {
     // we may also want to clean up any audio buffers
     printf("audio_stop\n");
     jack_client_close (client);
-    free(sdr->iqSample);
-
-    free(sdr->output);
+    if (sdr->iqSample) free(sdr->iqSample);
+    if (sdr->output) free(sdr->output);
 }
 
 int audio_connect(SDR_DATA *sdr) {
     
     const char **ports;
     // start processing audio
-    //jack_set_process_callback (client, audio_process, 0);
+    jack_set_process_callback (client, audio_process, sdr);
     
     
     //jack_on_shutdown (client, jack_shutdown, 0);

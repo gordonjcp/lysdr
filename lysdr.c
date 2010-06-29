@@ -16,6 +16,13 @@ int main(int argc, char *argv[]) {
     sdr = (SDR_DATA *)malloc(sizeof(SDR_DATA));
     audio_start(sdr);
     
+    sdr->loPhase = cexp((I * -2.0 * 3.14159 * -16750) / sdr->samplerate);
+    sdr->loVector = 1;
+    sdr->agcGain = 0;
+    sdr->agcPeak = 0;
+
+
+        
     audio_connect(sdr);
     gtk_init(&argc, &argv);
     gui_display();
