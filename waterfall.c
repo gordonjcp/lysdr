@@ -221,9 +221,11 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     cairo_set_source_surface (cr, pix, 0, 0);
     cairo_paint(cr);
+
+    cairo_set_line_width(cr, 0.5);
     
     // pink cursor
-    cairo_set_source_rgba(cr, 1 ,0.5, 0.5, 0.75); // pink for cursor
+    cairo_set_source_rgba(cr, 1 ,0.5, 0.5, 1); // pink for cursor
     cairo_move_to(cr, cursor, 0);
     cairo_line_to(cr, cursor, height);
     cairo_stroke(cr);
@@ -232,12 +234,21 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_set_source_rgba(cr, 1,1,1,0.25);
     cairo_rectangle(cr, cursor-lowpass, 0, lowpass-highpass, height);
     cairo_fill(cr);
-    //cairo_set_source_rgba(cr, 1, 1, 1, 0.75);
+    
+    // filter cursors
+    cairo_set_source_rgba(cr, 1, 1, 1, 0.75);
+    cairo_move_to(cr, cursor-lowpass, 0);
+    cairo_line_to(cr, cursor-lowpass, height);
+    cairo_stroke(cr);
+
+    cairo_move_to(cr, cursor-highpass, 0);
+    cairo_line_to(cr, cursor-highpass, height);
+    cairo_stroke(cr);
 
     cairo_set_source_rgba(cr, 1,1,0,0.5);
     cairo_move_to(cr, 0, wf->pixelrow);
     cairo_line_to(cr, width, wf->pixelrow);
-    cairo_set_line_width(cr, 0.5);
+
     cairo_stroke(cr);
     
     
