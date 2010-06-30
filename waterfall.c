@@ -4,6 +4,9 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkadjustment.h>
 #include <gtk/gtkmain.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "waterfall.h"
 
 static GtkWidgetClass *parent_class = NULL;
@@ -20,6 +23,8 @@ enum {
 static gboolean sdr_waterfall_expose(GtkWidget *wf, GdkEventExpose *event);
 static void sdr_waterfall_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec);
 static void sdr_waterfall_get_property(GObject *object, guint property_id, GValue *value, GParamSpec *pspec);
+static void sdr_waterfall_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
+static void sdr_waterfall_send_configure(GtkWidget *widget);
 
 static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     GtkWidgetClass *widget_class;
@@ -30,6 +35,7 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     
     gobject_class->set_property = sdr_waterfall_set_property;
     gobject_class->get_property = sdr_waterfall_get_property;
+    widget_class->size_allocate = sdr_waterfall_size_allocate;
 
     g_object_class_install_property (gobject_class,
         PROP_TUNING,
@@ -74,10 +80,6 @@ static void sdr_waterfall_set_property(GObject *object, guint property_id, const
             break;            
     }
 }   
-/* case PROP_ADJUSTMENT:
-      gtk_range_set_adjustment (range, g_value_get_object (value));
-      break;
-*/
 
 static void sdr_waterfall_get_property(GObject *object, guint property_id, GValue *value, GParamSpec *pspec) {
 
@@ -98,11 +100,77 @@ static void sdr_waterfall_get_property(GObject *object, guint property_id, GValu
     }
 }
 
-
 static void sdr_waterfall_init (SDRWaterfall *wf) {
+    // stub
 }
 
+static void sdr_waterfall_size_allocate(GtkWidget *widget, GtkAllocation *allocation) {
+	SDRWaterfall *wf = SDR_WATERFALL(widget);
+	gint width, height, oldsize, newsize;
+	
+	guchar *newpixels;
+
+	g_return_if_fail(widget != NULL);
+	g_return_if_fail(SDR_IS_WATERFALL(widget));
+	g_return_if_fail(allocation != NULL);
+
+	width = allocation->width;
+	height = allocation->height;
+
+
+	widget->allocation = *allocation;
+	widget->allocation.width = width;
+	widget->allocation.height = height;
+	
+	
+	newsize = width * height * 4;
+	oldsize = wf->pixelsize;
+	
+	newpixels = g_new0(guchar, newsize);
+	
+    
+    if (wf->pixels) {
+        // scale old image to new one (copy for now)
+        memcpy(wf->pixels, newpixels, MIN(oldsize, newsize));
+        free(wf->pixels);
+        wf->pixels = NULL;
+        wf->pixelsize = newsize;        
+    }
+    
+	if (!wf->pixels) {
+        wf->pixels = newpixels;
+	}
+	
+	if (GTK_WIDGET_REALIZED(widget)) {
+    	gdk_window_move_resize(widget->window,
+	        allocation->x, allocation->y,
+	        allocation->width, allocation->height);
+        sdr_waterfall_send_configure(widget);
+
+	}
+
+    printf("wf->pixels = %x\n", wf->pixels);
+    printf("sdr_waterfall_size_allocate: %d pixels\n", width*height);
+}
+
+static void sdr_waterfall_send_configure(GtkWidget *widget) {
+	GdkEventConfigure event;
+
+	event.type = GDK_CONFIGURE;
+	event.window = widget->window;
+	event.send_event = TRUE;
+	event.x = widget->allocation.x;
+	event.y = widget->allocation.y;
+	event.width = widget->allocation.width;
+	event.height = widget->allocation.height;
+  
+	gtk_widget_event(widget, (GdkEvent*)&event);
+}
+
+
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune) {
+    // call this with three Adjustments, for tuning, lowpass filter and highpass filter
+    // the tuning Adjustment should have its upper and lower bounds set to half the sample rate
     return g_object_new(
         SDR_TYPE_WATERFALL,
         "tuning", tuning,
@@ -113,6 +181,8 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
 }
 
 void sdr_waterfall_update(GtkWidget *widget) {
+    // stub, -ish
+    // to be called with a row of pixel data for the waterfall
     gtk_widget_queue_draw(widget);
 }
 

@@ -18,28 +18,21 @@ struct _SDRWaterfall {
     GtkAdjustment *tuning;
     GtkAdjustment *lp_tune;
     GtkAdjustment *hp_tune;
-    
-    gdouble position;          // cursor position
-    gint highpass, lowpass; // highpass and lowpass marker offset from cursor
+
     gint mode;
-    gint max_lowpass;       // highest possible lowpass setting
+
     gint drag;              // what we're dragging (if anything)
     gint prelight;
     gint last_prelight;
     gint dragoffset;        // where we clicked when dragging the whole cursor
-    gint fft_size;          // defines the maximum width
-    // these can be moved out to private values
-    gint c_left;
-    gint c_right;
-    gint c_lowpass;
-    gint c_highpass;
     guchar *pixels;     // actual pixel data for the waterfall
+    gint pixelsize;
 };
 
 struct _SDRWaterfallClass {
     GtkDrawingAreaClass parent_class;
-    void (* tuning_changed) (SDRWaterfall *wf, float tuning);
-    void (* filter_changed) (SDRWaterfall *wf, float lowpass);
+//    void (* tuning_changed) (SDRWaterfall *wf, float tuning);
+//    void (* filter_changed) (SDRWaterfall *wf, float lowpass);
 };
 
 struct _SDRWaterfallPrivate {
@@ -51,11 +44,6 @@ enum dragstate {
     HIGHPASS,
     TUNE,
     TUNE_GRAB
-};
-
-enum {
-    USB,
-    LSB
 };
 
 enum {
