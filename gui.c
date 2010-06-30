@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 
 #include "sdr.h"
+#include "waterfall.h"
 
 
     GtkWidget *label;
@@ -92,7 +93,8 @@ void gui_display(SDR_DATA *sdr)
     gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
 
     // AGC
-    progress = gtk_progress_bar_new();
+    //progress = gtk_progress_bar_new();
+    progress = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune));
     gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
     gtk_widget_show_all(mainWindow);
     
