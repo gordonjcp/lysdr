@@ -1,6 +1,6 @@
 lysdr - simple software-defined radio
 
-Requirements: gtk and jack, waf to build
+Requirements: gtk, fftw3 and jack, waf to build
 
 1. Configure with "./waf configure"
 2. Build with "./waf build"
@@ -16,3 +16,6 @@ frequency offset in Hz from the SDR centre (local oscillator) frequency.
 Filter bandwith is adjustable, with hardcoded 250 taps in the FIR.
 At present lysdr only demodulates LSB, but can be adapted for USB.
 
+BUGS:
+Crashes when resizing
+after resizing, the scale no longer accurately tracks the tuning
