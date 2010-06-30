@@ -33,6 +33,7 @@ static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
     gtk_adjustment_set_upper(GTK_ADJUSTMENT(sdr->hp_tune), tune);
     gtk_adjustment_changed(GTK_ADJUSTMENT(sdr->hp_tune));
     make_filter(sdr->samplerate, 250, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
+    sdr_waterfall_update(progress);
 }
 
 static void highpass_changed(GtkWidget *widget, gpointer psdr) {
@@ -48,7 +49,7 @@ static void highpass_changed(GtkWidget *widget, gpointer psdr) {
     gtk_adjustment_set_lower(GTK_ADJUSTMENT(sdr->lp_tune), tune);
     gtk_adjustment_changed(GTK_ADJUSTMENT(sdr->lp_tune));
     make_filter(sdr->samplerate, 250, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
-        
+    sdr_waterfall_update(progress);
 }
 
 void gui_display(SDR_DATA *sdr)
@@ -101,7 +102,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_widget_show_all(mainWindow);
     
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
-   // gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
-   // gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
 }
 
