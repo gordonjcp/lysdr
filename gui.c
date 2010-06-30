@@ -95,6 +95,7 @@ void gui_display(SDR_DATA *sdr)
     // AGC
     progress = gtk_progress_bar_new();
     progress = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune));
+    gtk_widget_set_size_request(progress, 600, 150);
     gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
   
     gtk_widget_show_all(mainWindow);

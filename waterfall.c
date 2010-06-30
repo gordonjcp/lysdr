@@ -132,11 +132,17 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     
     printf("%f\n", cursor);
+    
+    // black background, will be replaced with waterfall pixels
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_fill(cr);
+    cairo_paint(cr);
+    
     cairo_set_source_rgba(cr, 1 ,0.5, 0.5, 0.75); // pink for cursor
     cairo_move_to(cr, cursor, 0);
     cairo_line_to(cr, cursor, height);
     cairo_stroke(cr);
-    cairo_paint(cr);
     
     cairo_destroy (cr);
     
