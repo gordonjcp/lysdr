@@ -52,6 +52,7 @@ int sdr_process(SDR_DATA *sdr) {
     int i, j, k;
     double y, accI, accQ;
     complex c;
+    FFT_DATA *fft = sdr->fft;
     
     float agcGain = sdr->agcGain;
     float agcPeak = 0;//sdr->agcPeak;
@@ -76,7 +77,6 @@ int sdr_process(SDR_DATA *sdr) {
 		}
 		fft->index=j;
 	}
-
 
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
@@ -152,3 +152,4 @@ void fft_teardown(SDR_DATA *sdr) {
     fftw_free(fft->out);
     free(sdr->fft);
 }
+

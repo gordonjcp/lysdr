@@ -180,9 +180,14 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
     );
 }
 
-void sdr_waterfall_update(GtkWidget *widget) {
-    // stub, -ish
-    // to be called with a row of pixel data for the waterfall
+void sdr_waterfall_update(GtkWidget *widget, guchar row[]) {
+    SDRWaterfall *wf = SDR_WATERFALL(widget);
+    int width = widget->allocation.width;
+    int height = widget->allocation.height;
+    
+    memmove(wf->pixels + 2048 * wf->pixelrow, row, 2048);    // FIXME
+    wf->pixelrow++;
+    if (wf->pixelrow > height) wf->pixelrow=0;
     gtk_widget_queue_draw(widget);
 }
 
@@ -192,6 +197,7 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     int width = widget->allocation.width;
     int height = widget->allocation.height;
     cairo_t *cr = gdk_cairo_create (widget->window);
+    cairo_surface_t *pix;
     
     float tuning = GTK_ADJUSTMENT(wf->tuning)->value;
     
@@ -205,6 +211,15 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_fill(cr);
+    
+    pix = cairo_image_surface_create_for_data (wf->pixels,
+        CAIRO_FORMAT_RGB24,
+        512, //width,
+        height,
+        (2048));
+    
+    cairo_set_source_surface (cr, pix, 0, 0);
+    cairo_paint(cr);
     
     // pink cursor
     cairo_set_source_rgba(cr, 1 ,0.5, 0.5, 0.75); // pink for cursor
