@@ -125,12 +125,16 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     float tuning = GTK_ADJUSTMENT(wf->tuning)->value;
     
-    float cursor = (tuning/GTK_ADJUSTMENT(wf->tuning)->upper)/2 + 0.5;
+    // scale in pixels per Hz
+    float pixscale = width/(GTK_ADJUSTMENT(wf->tuning)->upper*2);
+    
+    float cursor = (tuning + GTK_ADJUSTMENT(wf->tuning)->upper) * pixscale;
+    
     
     printf("%f\n", cursor);
     cairo_set_source_rgba(cr, 1 ,0.5, 0.5, 0.75); // pink for cursor
-    cairo_move_to(cr, width*cursor, 0);
-    cairo_line_to(cr, width*cursor, height);
+    cairo_move_to(cr, cursor, 0);
+    cairo_line_to(cr, cursor, height);
     cairo_stroke(cr);
     cairo_paint(cr);
     
