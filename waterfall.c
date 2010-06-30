@@ -112,6 +112,10 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
     );
 }
 
+void sdr_waterfall_update(GtkWidget *widget) {
+    gtk_widget_queue_draw(widget);
+}
+
 static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     SDRWaterfall *wf = SDR_WATERFALL(widget);

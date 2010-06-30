@@ -17,6 +17,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->samplerate);
+    sdr_waterfall_update(progress);
 }
 
 static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
@@ -98,7 +99,7 @@ void gui_display(SDR_DATA *sdr)
   
     gtk_widget_show_all(mainWindow);
     
-   // gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
    // gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
    // gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
 }

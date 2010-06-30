@@ -75,7 +75,7 @@ enum {
 G_END_DECLS
 
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune);
-void sdr_waterfall_update(SDRWaterfall *wf, guchar row[]);
+void sdr_waterfall_update(GtkWidget *widget);
 #endif /* __WATERFALL_H */
 
 
