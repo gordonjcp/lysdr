@@ -7,6 +7,19 @@
 
 #include <complex.h>
 #include <gtk/gtk.h>
+#include <fftw3.h>
+
+enum fft_status {EMPTY,			// fft_data is currently unused
+	FILLING,			// now writing samples to this fft
+	READY};				// ready to perform fft
+
+typedef struct {
+	fftw_complex *samples;		// complex data for fft
+	fftw_complex *out;
+	fftw_plan plan;			// fft plan for fftW
+	int index;			// position of next fft sample
+	enum fft_status status;		// whether the fft is busy
+	} FFT_DATA;
 
 typedef struct {
     complex *iqSample;  // the array of incoming samples
@@ -17,7 +30,11 @@ typedef struct {
     GtkObject *tuning;  // adjustment for tuning
     GtkObject *lp_tune; // adjustment for filter lowpass
     GtkObject *hp_tune; // adjustment for filter highpass
-        
+     
+     
+    FFT_DATA *fft;
+    int fft_size;
+    
     // things to keep track of between callbacks
     complex dc_remove;
     float agcPeak;

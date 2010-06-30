@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <complex.h>
+#include <fftw3.h>
 
 #include "sdr.h"
 
@@ -61,7 +62,21 @@ int sdr_process(SDR_DATA *sdr) {
                 c = sdr->iqSample[i] + sdr->dc_remove * 0.95;
                 sdr->iqSample[i] = c - sdr->dc_remove;
                 sdr->dc_remove = c;
-   }
+    }
+
+    // copy this frame to FFT
+    if (fft->status != READY) {
+        j = fft->index;
+
+        for (i = 0; i < sdr->size; i++) {
+            fft->samples[j] = sdr->iqSample[i];
+	    	if (++j >= sdr->fft_size) {	// check sample count
+	    		fft->status = READY;				// ready to run fft
+	    	}
+		}
+		fft->index=j;
+	}
+
 
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
@@ -118,5 +133,22 @@ int sdr_process(SDR_DATA *sdr) {
     sdr->agcGain = agcGain;
 }
 
+void fft_setup(SDR_DATA *sdr) {
+    sdr->fft = (FFT_DATA *)malloc(sizeof(FFT_DATA));
+    sdr->fft_size = 512; // FIXME
+    FFT_DATA *fft = sdr->fft;
+    
+    fft->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
+    fft->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
+    fft->plan = fftw_plan_dft_1d(sdr->fft_size, fft->samples, fft->out, FFTW_FORWARD, FFTW_ESTIMATE);
+	fft->status = EMPTY;
+	fft->index = 0;
+}
 
-
+void fft_teardown(SDR_DATA *sdr) {
+    FFT_DATA *fft = sdr->fft;
+    fftw_destroy_plan(fft->plan);
+    fftw_free(fft->samples);
+    fftw_free(fft->out);
+    free(sdr->fft);
+}

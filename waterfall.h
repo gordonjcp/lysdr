@@ -27,6 +27,7 @@ struct _SDRWaterfall {
     gint dragoffset;        // where we clicked when dragging the whole cursor
     guchar *pixels;     // actual pixel data for the waterfall
     gint pixelsize;
+    gint pixelrow;      // where to draw the next row
 };
 
 struct _SDRWaterfallClass {

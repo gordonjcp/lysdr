@@ -23,11 +23,14 @@ int main(int argc, char *argv[]) {
     sdr->agcPeak = 0;
         
     audio_connect(sdr);
+    fft_setup(sdr);
+    
     gtk_init(&argc, &argv);
     
     gui_display(sdr);
         
     gtk_main();
+    fft_teardown(sdr);
     audio_stop(sdr);
     free(sdr);
 }
