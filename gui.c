@@ -74,7 +74,6 @@ static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
     gtk_adjustment_changed(GTK_ADJUSTMENT(sdr->hp_tune));
     make_filter(sdr->samplerate, 250, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
     gtk_widget_queue_draw(GTK_WIDGET(wfdisplay));
-    //sdr_waterfall_update(progress);
 }
 
 static void highpass_changed(GtkWidget *widget, gpointer psdr) {
@@ -138,13 +137,13 @@ void gui_display(SDR_DATA *sdr)
     gtk_widget_set_size_request(wfdisplay, 512, 150);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 
-
     // AGC
     progress = gtk_progress_bar_new();
     gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
     
     gtk_widget_show_all(mainWindow);
     
+    // connect handlers
     g_timeout_add(100,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
