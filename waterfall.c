@@ -126,9 +126,9 @@ static void sdr_waterfall_size_allocate(GtkWidget *widget, GtkAllocation *alloca
 	newsize = width * height * 4;
 	oldsize = wf->pixelsize;
 	
-	newpixels = g_new0(guchar, newsize);
-	
+	//newpixels = g_new0(guchar, newsize);
     
+    /*
     if (wf->pixels) {
         // scale old image to new one (copy for now)
         memcpy(wf->pixels, newpixels, MIN(oldsize, newsize));
@@ -136,8 +136,9 @@ static void sdr_waterfall_size_allocate(GtkWidget *widget, GtkAllocation *alloca
         wf->pixels = NULL;
         wf->pixelsize = newsize;        
     }
-    
+    */
 	if (!wf->pixels) {
+       	newpixels = g_new0(guchar, newsize);
         wf->pixels = newpixels;
 	}
 	
@@ -183,8 +184,7 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
 void sdr_waterfall_update(GtkWidget *widget, guchar row[]) {
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     int width = widget->allocation.width;
-    int height = widget->allocation.height;
-    
+    int height = MIN(widget->allocation.height, 150);
     memmove(wf->pixels + 2048 * wf->pixelrow, row, 2048);    // FIXME
     wf->pixelrow++;
     if (wf->pixelrow > height) wf->pixelrow=0;
@@ -195,7 +195,8 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     int width = widget->allocation.width;
-    int height = widget->allocation.height;
+    //int height = widget->allocation.height;
+        int height = MIN(widget->allocation.height, 150);
     cairo_t *cr = gdk_cairo_create (widget->window);
     cairo_surface_t *pix;
     
