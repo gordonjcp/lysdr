@@ -35,6 +35,7 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     gobject_class->get_property = sdr_waterfall_get_property;
 
 
+    printf("about to set properties\n");
 
     
     g_object_class_install_property (gobject_class,
@@ -59,11 +60,13 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
 		"The GtkAdjustment for the highpass tuning",
         GTK_TYPE_ADJUSTMENT,
         G_PARAM_READWRITE | G_PARAM_CONSTRUCT));   
-        
+   
+   printf("done setting properties\n");     
 }
 
 static void sdr_waterfall_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec) {
     SDRWaterfall *wf = SDR_WATERFALL(object);
+    printf("in sdr_waterfall_set_property\n");
     switch(property_id) {
         case PROP_TUNING:
             gtk_range_set_adjustment (GTK_RANGE(wf->tuning), g_value_get_object(value));
@@ -75,6 +78,7 @@ static void sdr_waterfall_set_property(GObject *object, guint property_id, const
             gtk_range_set_adjustment (GTK_RANGE(wf->tuning), g_value_get_object(value));
             break;
         default:
+                        printf("get - for property %d\n", property_id);
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
             break;            
     }
@@ -87,7 +91,7 @@ static void sdr_waterfall_set_property(GObject *object, guint property_id, const
 static void sdr_waterfall_get_property(GObject *object, guint property_id, GValue *value, GParamSpec *pspec) {
 
     SDRWaterfall *wf = SDR_WATERFALL(object);
-    
+        printf("in sdr_waterfall_get_property\n");
     switch(property_id) {
         case PROP_TUNING:
             g_value_set_object (value, wf->tuning);
@@ -99,6 +103,7 @@ static void sdr_waterfall_get_property(GObject *object, guint property_id, GValu
             g_value_set_object (value, wf->hp_tune);
             break;
         default:
+            printf("for property %d\n", property_id);
             G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
             break;            
     }
