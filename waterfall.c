@@ -112,16 +112,29 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
     );
 }
 
-static gboolean sdr_waterfall_expose(GtkWidget *wf, GdkEventExpose *event) {
-        cairo_t *cr;
+static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
-        /* get a cairo_t */
-        cr = gdk_cairo_create (wf->window);
-
-        cairo_destroy (cr);
-
-        return FALSE;
+    SDRWaterfall *wf = SDR_WATERFALL(widget);
+    int width = widget->allocation.width;
+    int height = widget->allocation.height;
+    cairo_t *cr = gdk_cairo_create (widget->window);
+    
+    float tuning = GTK_ADJUSTMENT(wf->tuning)->value;
+    
+    float cursor = (tuning/GTK_ADJUSTMENT(wf->tuning)->upper)/2 + 0.5;
+    
+    printf("%f\n", cursor);
+    cairo_set_source_rgba(cr, 1 ,0.5, 0.5, 0.75); // pink for cursor
+    cairo_move_to(cr, width*cursor, 0);
+    cairo_line_to(cr, width*cursor, height);
+    cairo_stroke(cr);
+    cairo_paint(cr);
+    
+    cairo_destroy (cr);
+    
+   // printf("%f\n", GTK_ADJUSTMENT(wf->lp_tune)->value);
 
 
     return FALSE;
 }
+

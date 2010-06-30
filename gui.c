@@ -63,7 +63,6 @@ void gui_display(SDR_DATA *sdr)
     float tune_max;
     
 	gtk_window_set_title(GTK_WINDOW(mainWindow), "lysdr");
-	gtk_window_set_position(GTK_WINDOW(mainWindow), GTK_WIN_POS_CENTER_ALWAYS);
 	gtk_signal_connect(GTK_OBJECT(mainWindow), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
     vbox = gtk_vbox_new(FALSE,1);
@@ -93,13 +92,14 @@ void gui_display(SDR_DATA *sdr)
     gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
 
     // AGC
-    //progress = gtk_progress_bar_new();
+    progress = gtk_progress_bar_new();
     progress = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune));
     gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
+  
     gtk_widget_show_all(mainWindow);
     
-    gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
-    gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
-    gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
+   // gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
+   // gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
+   // gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
 }
 
