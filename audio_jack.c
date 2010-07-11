@@ -24,7 +24,6 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
     
     SDR_DATA *sdr;
     sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
-
     
     // get all four buffers
 	ii = jack_port_get_buffer (I_in, nframes);
@@ -33,18 +32,21 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
     R = jack_port_get_buffer (R_out, nframes);
 
     // the SDR expects a bunch of complex samples
+
     for(i = 0; i < nframes; i++) {
     // uncomment whichever is appropriate
         sdr->iqSample[i] = ii[i] + I * qq[i]; // I on left
     //    sdr->iqSample[i] = qq[i] + I * ii[i]; // I on right
     }
+
     // actually run the SDR for a frame
     sdr_process(sdr);
     
-    //for(i=0; i<nframes; i++) {
-    //    sdr->output[i]=ii[i];
-    //}
-    
+    /*
+    for(i=0; i<nframes; i++) {
+        sdr->output[i]=ii[i];
+    }
+    */
     // copy the frames to the output
     for(i = 0; i < nframes; i++) {
         L[i]=sdr->output[i];

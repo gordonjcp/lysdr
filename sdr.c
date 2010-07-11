@@ -53,10 +53,9 @@ int sdr_process(SDR_DATA *sdr) {
     double y, accI, accQ;
     complex c;
     FFT_DATA *fft = sdr->fft;
-    
+    FFT_DATA *fft_out = sdr->fft;
     float agcGain = sdr->agcGain;
     float agcPeak = 0;//sdr->agcPeak;
-    
 
     // remove DC
     for (i = 0; i < sdr->size; i++) {       // DC removal; R.G. Lyons page 553
@@ -66,6 +65,7 @@ int sdr_process(SDR_DATA *sdr) {
     }
 
     // copy this frame to FFT
+
     if (fft->status != READY) {
         j = fft->index;
 
@@ -78,12 +78,33 @@ int sdr_process(SDR_DATA *sdr) {
 		fft->index=j;
 	}
 
+/*
+     //if (fft->status != READY) {
+        j = fft->index;
+		j = sdr->fft_size - sdr->size;
+        for (i = 0; i < j; i++) {
+            //fft->samples[j] = sdr->iqSample[i];
+            fft->samples[j] = fft->samples[j + sdr->size];
+            
+//	    	if (++j >= sdr->fft_size) {	// check sample count
+				// ready to run fft
+//	    	}
+		}
+
+		for (i = 0; i< sdr->size; i++) {
+		fft->samples[j] = sdr->iqSample[i];
+		j++;
+		}
+    		fft->status = READY;		
+		fft->index=j;
+	//}
+*/
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
 		sdr->iqSample[i] *= sdr->loVector;
     	sdr->loVector *= sdr->loPhase;
 	}
-	
+	/*
 
 	// apply the FIR filter
     for (i = 0; i < sdr->size; i++) {
@@ -101,14 +122,15 @@ int sdr_process(SDR_DATA *sdr) {
 		sdr->iqSample[i] = accI + I * accQ;
 		if (++indexFilter >= sizeFilter) indexFilter = 0;
 	}
-
+*/
     // this demodulates LSB
     for (i=0; i<sdr->size; i++) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-        sdr->output[i] = y;
+        sdr->output[i] = y*10;
     }
 
     // agc
+    /*
     for (i = 0; i < sdr->size; i++) {
         y = fabs(sdr->output[i]);
         if (agcPeak < y) agcPeak = y;
@@ -128,14 +150,15 @@ int sdr_process(SDR_DATA *sdr) {
     for (i = 0; i < sdr->size; i++){
         sdr->output[i] *= y;
     }
- 
+ */
     sdr->agcPeak = agcPeak;
     sdr->agcGain = agcGain;
+
 }
 
 void fft_setup(SDR_DATA *sdr) {
     sdr->fft = (FFT_DATA *)malloc(sizeof(FFT_DATA));
-    sdr->fft_size = 512; // FIXME
+    sdr->fft_size = FFT_SIZE;
     FFT_DATA *fft = sdr->fft;
     
     fft->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
@@ -143,6 +166,15 @@ void fft_setup(SDR_DATA *sdr) {
     fft->plan = fftw_plan_dft_1d(sdr->fft_size, fft->samples, fft->out, FFTW_FORWARD, FFTW_ESTIMATE);
 	fft->status = EMPTY;
 	fft->index = 0;
+	
+	sdr->fft_out = (FFT_DATA *)malloc(sizeof(FFT_DATA));
+
+    fft = sdr->fft_out;
+    
+    fft->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
+    fft->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
+    fft->plan = fftw_plan_dft_1d(sdr->fft_size, fft->samples, fft->out, FFTW_BACKWARD, FFTW_ESTIMATE);
+	
 }
 
 void fft_teardown(SDR_DATA *sdr) {
@@ -150,6 +182,17 @@ void fft_teardown(SDR_DATA *sdr) {
     fftw_destroy_plan(fft->plan);
     fftw_free(fft->samples);
     fftw_free(fft->out);
+    
     free(sdr->fft);
+    
+    fft = sdr->fft_out;
+    fftw_destroy_plan(fft->plan);
+    fftw_free(fft->samples);
+    fftw_free(fft->out);
+    
+    free(sdr->fft_out);
+
+    
+    
 }
 

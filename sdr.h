@@ -9,6 +9,8 @@
 #include <gtk/gtk.h>
 #include <fftw3.h>
 
+#define FFT_SIZE 1024
+
 enum fft_status {EMPTY,			// fft_data is currently unused
 	FILLING,			// now writing samples to this fft
 	READY};				// ready to perform fft
@@ -33,6 +35,7 @@ typedef struct {
      
      
     FFT_DATA *fft;
+    FFT_DATA *fft_out;
     int fft_size;
     
     // things to keep track of between callbacks

@@ -10,7 +10,7 @@ extern void gui_display();
 
 
 SDR_DATA *sdr;
-guchar data[2048]; //FIXME
+guchar data[4*FFT_SIZE];
 int main(int argc, char *argv[]) {
     printf("lysdr starting\n");
     

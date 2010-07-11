@@ -185,9 +185,9 @@ void sdr_waterfall_update(GtkWidget *widget, guchar row[]) {
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     int width = widget->allocation.width;
     int height = MIN(widget->allocation.height, 150);
-    memmove(wf->pixels + 2048 * wf->pixelrow, row, 2048);    // FIXME
+    memmove(wf->pixels + 4*width * wf->pixelrow, row, 4*width);
     wf->pixelrow++;
-    if (wf->pixelrow > height) wf->pixelrow=0;
+    if (wf->pixelrow == height) wf->pixelrow=0;
     gtk_widget_queue_draw(widget);
 }
 
@@ -215,9 +215,9 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     pix = cairo_image_surface_create_for_data (wf->pixels,
         CAIRO_FORMAT_RGB24,
-        512, //width,
-        height,
-        (2048));
+        width,
+        height+1,
+        (4*width));
     
     cairo_set_source_surface (cr, pix, 0, 0);
     cairo_paint(cr);

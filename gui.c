@@ -7,7 +7,7 @@
 #include "sdr.h"
 #include "waterfall.h"
 
-extern guchar data[2048];
+extern guchar data[FFT_SIZE*4];
 extern SDR_DATA *sdr;
 
     GtkWidget *label;
@@ -26,9 +26,9 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
         fft->status=EMPTY;
         fft->index=0;
       }
-    hi = 256; // FIXME
+    hi = FFT_SIZE/2;
     j=0;
-    for(i=0; i<512; i++) {
+    for(i=0; i<FFT_SIZE; i++) {
         p=i;
         if (p<hi) p=p+hi; else p=p-hi;
       	z = fft->out[p];     // contains the FFT data 
@@ -134,7 +134,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune));
-    gtk_widget_set_size_request(wfdisplay, 512, 150);
+    gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 
     // AGC
@@ -144,7 +144,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_widget_show_all(mainWindow);
     
     // connect handlers
-    g_timeout_add(100,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+    g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
