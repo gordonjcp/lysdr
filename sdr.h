@@ -10,7 +10,6 @@
 #include <fftw3.h>
 
 #define FFT_SIZE 1024
-
 enum fft_status {EMPTY,			// fft_data is currently unused
 	FILLING,			// now writing samples to this fft
 	READY};				// ready to perform fft

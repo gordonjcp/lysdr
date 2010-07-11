@@ -53,7 +53,7 @@ int sdr_process(SDR_DATA *sdr) {
     double y, accI, accQ;
     complex c;
     FFT_DATA *fft = sdr->fft;
-    FFT_DATA *fft_out = sdr->fft;
+    FFT_DATA *fft_out = sdr->fft_out;
     float agcGain = sdr->agcGain;
     float agcPeak = 0;//sdr->agcPeak;
 
@@ -65,94 +65,35 @@ int sdr_process(SDR_DATA *sdr) {
     }
 
     // copy this frame to FFT
+    for (i=0; i<sdr->size; i++) {
+        fft->samples[i] = sdr->iqSample[i];
+    }
+    fft->status = READY;
+    fftw_execute(fft->plan);
+    
+    for (i=0; i<sdr->fft_size; i++) {
+        fft_out->samples[i] = fft->out[i];
+    }
 
-    if (fft->status != READY) {
-        j = fft->index;
+    fftw_execute(fft_out->plan);
+    for (i=0; i<sdr->size; i++) {
+        sdr->iqSample[i] = fft_out->out[i];
+        
+    }
+    
+   // printf("%f %f\n", creal(fft_out->out[40]), creal(fft_out->samples[40]));
 
-        for (i = 0; i < sdr->size; i++) {
-            fft->samples[j] = sdr->iqSample[i];
-	    	if (++j >= sdr->fft_size) {	// check sample count
-	    		fft->status = READY;				// ready to run fft
-	    	}
-		}
-		fft->index=j;
-	}
-
-/*
-     //if (fft->status != READY) {
-        j = fft->index;
-		j = sdr->fft_size - sdr->size;
-        for (i = 0; i < j; i++) {
-            //fft->samples[j] = sdr->iqSample[i];
-            fft->samples[j] = fft->samples[j + sdr->size];
-            
-//	    	if (++j >= sdr->fft_size) {	// check sample count
-				// ready to run fft
-//	    	}
-		}
-
-		for (i = 0; i< sdr->size; i++) {
-		fft->samples[j] = sdr->iqSample[i];
-		j++;
-		}
-    		fft->status = READY;		
-		fft->index=j;
-	//}
-*/
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
 		sdr->iqSample[i] *= sdr->loVector;
     	sdr->loVector *= sdr->loPhase;
 	}
-	/*
 
-	// apply the FIR filter
-    for (i = 0; i < sdr->size; i++) {
-        c = sdr->iqSample[i];
-		bufFilterI[indexFilter] = creal(c);
-		bufFilterQ[indexFilter] = cimag(c);
-		accI = accQ = 0;
-		j = indexFilter;
-		for (k = 0; k < sizeFilter; k++) {
-			accI += bufFilterI[j] * cFilterI[k];
-			accQ += bufFilterQ[j] * cFilterQ[k];
-			if (++j >= sizeFilter)
-				j = 0;
-		}
-		sdr->iqSample[i] = accI + I * accQ;
-		if (++indexFilter >= sizeFilter) indexFilter = 0;
-	}
-*/
     // this demodulates LSB
     for (i=0; i<sdr->size; i++) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-        sdr->output[i] = y*10;
+        sdr->output[i] = y/10;
     }
-
-    // agc
-    /*
-    for (i = 0; i < sdr->size; i++) {
-        y = fabs(sdr->output[i]);
-        if (agcPeak < y) agcPeak = y;
-    }
-    if (agcPeak == 0) agcPeak = 0.00001;
-    //printf("%f %f\n", agcPeak, agcGain);
-    y = agcPeak * agcGain; // Current level if not changed
-
-    if (y <= 1) {       // Current level is below the soundcard max, increase gain
-        agcGain += (1/ agcPeak - agcGain) * 0.005;
-        //printf("increase %f\n",agcGain);
-    } else {                   // decrease gain
-        agcGain += (1 / agcPeak - agcGain) * 1;
-        //printf("decrease %f\n",agcGain);
-    }
-    y = agcGain * 0.5;             // change volume
-    for (i = 0; i < sdr->size; i++){
-        sdr->output[i] *= y;
-    }
- */
-    sdr->agcPeak = agcPeak;
-    sdr->agcGain = agcGain;
 
 }
 
@@ -168,13 +109,10 @@ void fft_setup(SDR_DATA *sdr) {
 	fft->index = 0;
 	
 	sdr->fft_out = (FFT_DATA *)malloc(sizeof(FFT_DATA));
-
-    fft = sdr->fft_out;
-    
-    fft->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
-    fft->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
-    fft->plan = fftw_plan_dft_1d(sdr->fft_size, fft->samples, fft->out, FFTW_BACKWARD, FFTW_ESTIMATE);
-	
+    sdr->fft_out->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
+    sdr->fft_out->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
+    sdr->fft_out->plan = fftw_plan_dft_1d(sdr->fft_size, sdr->fft_out->samples, sdr->fft_out->out, FFTW_BACKWARD, FFTW_ESTIMATE);
+    printf("%x %x\n", sdr->fft_out->out, sdr->fft->out);
 }
 
 void fft_teardown(SDR_DATA *sdr) {
