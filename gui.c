@@ -112,7 +112,7 @@ void gui_display(SDR_DATA *sdr)
 
     // tuning scale
     tune_max = (float)sdr->samplerate;
-    sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 10, 100, 0);
+    sdr->tuning = gtk_adjustment_new(5807, -tune_max/2, tune_max/2, 10, 100, 0);
     tuneslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->tuning));
     gtk_box_pack_start(GTK_BOX(vbox), tuneslider, TRUE, TRUE, 0);
     

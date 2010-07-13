@@ -8,6 +8,9 @@
 #include <string.h>
 
 #include "waterfall.h"
+#include "sdr.h"
+
+
 
 static GtkWidgetClass *parent_class = NULL;
 G_DEFINE_TYPE (SDRWaterfall, sdr_waterfall, GTK_TYPE_DRAWING_AREA);
@@ -19,6 +22,8 @@ enum {
     PROP_HP_TUNE
 };
 
+
+extern FFT_DATA *filter;
 
 static gboolean sdr_waterfall_expose(GtkWidget *wf, GdkEventExpose *event);
 static void sdr_waterfall_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec);
@@ -200,6 +205,8 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_t *cr = gdk_cairo_create (widget->window);
     cairo_surface_t *pix;
     
+    int i;
+    
     float tuning = GTK_ADJUSTMENT(wf->tuning)->value;
     
     // scale in pixels per Hz
@@ -251,6 +258,12 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     cairo_stroke(cr);
     
+    cairo_set_source_rgba(cr, 0, 0, 1, 1);
+    for(i=0; i< FFT_SIZE; i++) {
+        cairo_move_to(cr, i, height/2);
+        cairo_line_to(cr, i, height/2+(cabs(filter->out[i])*height/2));
+        cairo_stroke(cr);
+    }
     
     cairo_destroy (cr);
     return FALSE;

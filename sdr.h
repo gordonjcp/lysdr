@@ -35,6 +35,7 @@ typedef struct {
      
     FFT_DATA *fft;
     FFT_DATA *fft_out;
+    
     int fft_size;
     
     // things to keep track of between callbacks
