@@ -258,13 +258,14 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     cairo_stroke(cr);
     
+    /*
     cairo_set_source_rgba(cr, 0, 0, 1, 1);
     for(i=0; i< FFT_SIZE; i++) {
         cairo_move_to(cr, i, height/2);
         cairo_line_to(cr, i, height/2+(cabs(filter->out[i])*height/2));
         cairo_stroke(cr);
     }
-    
+    */
     cairo_destroy (cr);
     return FALSE;
 }

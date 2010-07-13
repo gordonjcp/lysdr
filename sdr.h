@@ -10,6 +10,8 @@
 #include <fftw3.h>
 
 #define FFT_SIZE 1024
+#define FIR_SIZE 256
+
 enum fft_status {EMPTY,			// fft_data is currently unused
 	FILLING,			// now writing samples to this fft
 	READY};				// ready to perform fft
@@ -34,7 +36,9 @@ typedef struct {
      
      
     FFT_DATA *fft;
-    FFT_DATA *fft_out;
+    FFT_DATA *fir_fwd;
+    FFT_DATA *fir_back;
+    FFT_DATA *fir_coeff;
     
     int fft_size;
     
@@ -48,5 +52,5 @@ typedef struct {
 } SDR_DATA;
 
 int sdr_process(SDR_DATA *sdr);
-void make_filter(float rate, int N, float bw, float centre);
+void make_filter(SDR_DATA *sdr, float rate, int N, float bw, float centre);
 #endif
