@@ -11,6 +11,7 @@
 #include "sdr.h"
 
 #define MAX_FILTER_SIZE 10000
+#define MAX_FIR_LEN 8*4096
  
 static int indexFilter;
 static int sizeFilter = FIR_SIZE;
@@ -20,6 +21,12 @@ static double cFilterQ[MAX_FILTER_SIZE];	// Digital filter coefficients
 static double bufFilterI[MAX_FILTER_SIZE];	// Digital filter sample buffer
 static double bufFilterQ[MAX_FILTER_SIZE];	// Digital filter sample buffer
 
+static double overlap[MAX_FIR_LEN];
+static int          fft_len = 0;
+static int          blk_len = 0;
+static gint blk_pos=0;
+static int n;
+
 void make_filter(SDR_DATA *sdr, float rate, int N, float bw, float centre) {
     // rate is currently 48000 by default
     // N - filter length
@@ -27,9 +34,23 @@ void make_filter(SDR_DATA *sdr, float rate, int N, float bw, float centre) {
     // centre = Fc
     
     // blow away N
-    N=FIR_SIZE;
+  
+    int  fft_len = MAX_FIR_LEN;
+    int fir_len = 512;  // number of FIR points
+    int blk_len = 128; // Min block length.
+    int n = 0;
+    while ((int) pow(2.0,(double) n) < MAX_FIR_LEN) {
+        if  ((int) pow(2.0, (double) n) >= fir_len + blk_len + 1) {
+            fft_len = (int) pow(2, (double) n);
+            break;
+        }
+    n++;
+    }
+    printf("blk_len = %d, fft_len = %d, fir_len=%d\n",blk_len, fft_len, fir_len);  
 
-    fftw_plan plan;
+
+
+    N=fir_len;
 
     float K = bw * N / rate;
     float w;
@@ -54,9 +75,11 @@ void make_filter(SDR_DATA *sdr, float rate, int N, float bw, float centre) {
     }
     // now for the clever bit
    fftw_execute(sdr->fir_coeff->plan);
-   //for (i=0; i<N; i++) {
-  //     printf("%d %f\n",i,filter->out[i]);
-  // }
+   /*
+   for (i=0; i<N; i++) {
+       printf("%d %f\n",i,sdr->fir_coeff->out[i]);
+   }
+*/
 }
 
 int sdr_process(SDR_DATA *sdr) {
@@ -90,18 +113,84 @@ int sdr_process(SDR_DATA *sdr) {
 		sdr->iqSample[i] *= sdr->loVector;
     	sdr->loVector *= sdr->loPhase;
 	}
-  
-    /* 
-    for (i=0; i<FIR_SIZE; i++) {
-        fir_fwd->samples[i] = fft->out[i] * cabs(filter->out[i]);
-    }
+  //blk_len = 128, fft_len = 1024, fir_len=512
 
-    fftw_execute(fft_out->plan);
-    for (i=0; i<sdr->size; i++) {
-        sdr->iqSample[i] = fft_out->out[i];
+    blk_len = 128, fft_len = 1024;
+    int  fir_len=512;
+    int length=sdr->size;
+  
+  
+        blk_len = fft_len + 1 - fir_len;
+      //blk_len = fft_len - fir_len;
+
+      // Check that blk_len is smaller than fragment size (=length/4).
+      if (length/4 < blk_len) { 
+	blk_len = length/4;
+      }
+  
+  printf("blk_len = %d\n",blk_len);
+  
+    // perform filtering
+    for (blk_pos = 0; blk_pos<length; blk_pos += blk_len) {
+        for (i=0, n=0; n < fft_len; i+=2, n++) {
+            if (blk_pos+n < length  && n < blk_len ) {
+             	sdr->fir_fwd->samples[n] = sdr->iqSample[blk_pos+n];
+            } else { // Zero-pad
+                sdr->fir_fwd->samples[n] = 0;
+            } // if
+        } // for
+
+
+        // next DFT the samples
+        fftw_execute(sdr->fir_fwd->plan);
+    
+       
+        // perform the filtering
+        for (n = 0; n < fft_len/2+1; n++) {
+            sdr->fir_back->samples[n] *= sdr->fir_coeff->out[n] / (double) fft_len;
+            //uf_r[n] *= hf_r[n] / (double) fft_len;
+        }
         
+        
+        fftw_execute(sdr->fir_back->plan);
+        // now the filtered processed samples are in sdr->fir_fwd->samples again
+                
+        
+        if ( (length-blk_pos)/2 >= blk_len) // Have blk_len samples in buffer.
+            k = blk_len;
+        else		  // Have less than blk_len samples in buffer.
+            k = (length-blk_pos)/2;
+    
+        // Add the last block's overlap to the current one.
+        for (n = 0; n < fir_len-1; n++) {
+          sdr->fir_fwd->samples[n] += overlap[n]; 
+          //u_r[n] += olap_r[n];
+        }
+
+    // Save the samples that will overlap to the next block.
+    for (n = k; n < k+fir_len; n++) {
+      overlap[n - k] = sdr->iqSample[n]; 
+      //olap_r[n - k] = u_r[n]; 
     }
-    */
+    
+    for (i = 0,n=0; n < blk_len; i+=2,n++) {
+
+      if (blk_pos+i < length/2) {
+	
+	// Left channel.
+	sdr->iqSample[blk_pos + n]   =  sdr->fir_fwd->samples[n];//CLAMP( (gint16) u_l[n], -32768, 32767);
+	
+	// Right channel.
+//	data[blk_pos + i+1] =  CLAMP( (gint16) u_r[n], -32768, 32767);
+
+      } // if
+    } // for
+        
+        
+        blk_len = fft_len + 1 - fir_len;
+        
+    
+    }
     
 
     // this demodulates LSB
@@ -128,9 +217,14 @@ void fft_setup(SDR_DATA *sdr) {
     sdr->fir_fwd->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FIR_SIZE);
     sdr->fir_fwd->plan = fftw_plan_dft_1d(FIR_SIZE, sdr->fir_fwd->samples, sdr->fir_fwd->out, FFTW_FORWARD, FFTW_ESTIMATE);
 
+    printf("set up sdr->fir_fwd correctly\n");
+
 	sdr->fir_back = (FFT_DATA *)malloc(sizeof(FFT_DATA));
-    sdr->fir_back->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FIR_SIZE);
-    sdr->fir_back->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FIR_SIZE);
+    //sdr->fir_back->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FIR_SIZE);
+    //sdr->fir_back->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * FIR_SIZE);
+    sdr->fir_back->samples = sdr->fir_fwd->out;
+    sdr->fir_back->out = sdr->fir_fwd->samples;
+    
     sdr->fir_back->plan = fftw_plan_dft_1d(FIR_SIZE, sdr->fir_back->samples, sdr->fir_back->out, FFTW_BACKWARD, FFTW_ESTIMATE);
 
 	sdr->fir_coeff = (FFT_DATA *)malloc(sizeof(FFT_DATA));
@@ -155,8 +249,8 @@ void fft_teardown(SDR_DATA *sdr) {
 
     fft = sdr->fir_back;
     fftw_destroy_plan(fft->plan);
-    fftw_free(fft->samples);
-    fftw_free(fft->out);
+    //fftw_free(fft->samples);
+   // fftw_free(fft->out);
     free(sdr->fir_back);
 
     fft = sdr->fir_coeff;
