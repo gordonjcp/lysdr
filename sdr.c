@@ -114,6 +114,25 @@ int sdr_process(SDR_DATA *sdr) {
     	sdr->loVector *= sdr->loPhase;
 	}
   //blk_len = 128, fft_len = 1024, fir_len=512
+  
+  /*
+  1. Compute N point FFT of a block of N-M input samples (zero pad to get
+to length N)
+2. Complex multiply resulting N points with N point FFT of the M point
+FIR filter (again zero pad)
+3. IFFT the result of step 2 to get a block of N time samples
+4. Add the last M points from the prior iteration's IFFT to the first M
+points of this IFFT result
+5. Write the first N-M points from step 4 to the output
+6. Save the last M points of this IFFT result for the next iteration's
+OLA
+7. Go back to step 1 and process the next N-M samples from the input
+
+The N point FFT of the M filter coefficients is typically a constant
+and only needs to be computed at initialization.
+
+
+  */
 
     blk_len = 128, fft_len = 1024;
     int  fir_len=512;
