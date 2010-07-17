@@ -27,6 +27,9 @@ static complex fir_imp[MAX_FIR_LEN];
 static complex fir_imp_fft[MAX_FIR_LEN];
 static complex fir_overlay[MAX_FIR_LEN];
 
+static int     fir_len = 0;
+static int length = 1024; // number of samples in a period
+
 void make_filter(float rate, int N, float bw, float centre) {
     // N - filter length
     // bw = bandwidth
@@ -51,6 +54,31 @@ void make_filter(float rate, int N, float bw, float centre) {
         fir_imp[i] = z;
         i++;
     }
+    // at this point, fir_imp[] contains our desired impulse.  Now to FFT it ;-)
+    
+    fir_len = N;
+    // Compute FFT and data block lengths.
+    fft_len = MAX_FIR_LEN;
+    blk_len = 128; // Min block length.
+    n = 0;
+    while ((int) pow(2.0,(double) n) < MAX_FIR_LEN) {
+    	if  ((int) pow(2.0, (double) n) >= fir_len + blk_len + 1) {
+            fft_len = (int) pow(2, (double) n);
+            break;
+        }   
+	    n++;
+    }
+
+    blk_len = fft_len + 1 - fir_len;
+    //blk_len = fft_len - fir_len;
+
+    // Check that blk_len is smaller than fragment size (=length/4).
+    if (length/4 < blk_len) { 
+        blk_len = length/4;
+    }
+
+    printf(" fft_len = %d\n blk_len = %d\n fir_len = %d\n", fft_len,blk_len,fir_len);
+    
 
 }
 
@@ -85,7 +113,7 @@ int sdr_process(SDR_DATA *sdr) {
 		sdr->iqSample[i] *= sdr->loVector;
     	sdr->loVector *= sdr->loPhase;
 	}
-  //blk_len = 128, fft_len = 1024, fir_len=512
+
   
   /*
   1. Compute N point FFT of a block of N-M input samples (zero pad to get
