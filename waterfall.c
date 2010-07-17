@@ -259,9 +259,9 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     cairo_stroke(cr);
     
-    
+    cairo_scale(cr, 1, 1);
     cairo_set_source_rgba(cr, .5, .5, 1, 1);
-    for(i=0; i < FFT_SIZE; i++) {
+    for(i=0; i < fir_len; i++) {
         cairo_move_to(cr, i, height/2);
         cairo_line_to(cr, i, height/2-(cabs(fir_imp_fft[i])*height/5));
         cairo_stroke(cr);

@@ -40,14 +40,8 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
     }
 
     // actually run the SDR for a frame
-    
-#if 1
+
     sdr_process(sdr);
-#else
-    for(i=0; i<nframes; i++) {
-        sdr->output[i]=ii[i];
-    }
-#endif
 
     // copy the frames to the output
     for(i = 0; i < nframes; i++) {
