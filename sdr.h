@@ -11,6 +11,7 @@
 
 #define FFT_SIZE 1024
 #define FIR_SIZE 1024
+#define MAX_FIR_LEN 8*4096
 
 enum fft_status {EMPTY,			// fft_data is currently unused
 	FILLING,			// now writing samples to this fft
@@ -52,5 +53,5 @@ typedef struct {
 } SDR_DATA;
 
 int sdr_process(SDR_DATA *sdr);
-void make_filter(SDR_DATA *sdr, float rate, int N, float bw, float centre);
+void make_filter(float rate, int N, float bw, float centre);
 #endif
