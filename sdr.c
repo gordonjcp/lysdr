@@ -24,10 +24,14 @@ static int n;
 static complex fir_in[MAX_FIR_LEN];
 static complex fir_fft[MAX_FIR_LEN];
 static complex fir_imp[MAX_FIR_LEN];
-static complex fir_imp_fft[MAX_FIR_LEN];
+complex fir_imp_fft[MAX_FIR_LEN];
 static complex fir_overlay[MAX_FIR_LEN];
 
-static int     fir_len = 0;
+static fftw_plan fwd  = NULL;
+static fftw_plan bwd  = NULL;
+static fftw_plan imp  = NULL;
+
+int     fir_len = 0;
 static int length = 1024; // number of samples in a period
 
 void make_filter(float rate, int N, float bw, float centre) {
@@ -46,9 +50,9 @@ void make_filter(float rate, int N, float bw, float centre) {
         if (k==0) z=(float)K/N;
         else z=1.0/N*sin(M_PI*k*K/N)/sin(M_PI*k/N);
         // apply a windowing function.  I can't hear any difference...
-        //w = 0.5 + 0.5 * cos(2.0 * M_PI * k / N); // Hanning window
-        w = 0.42 + 0.5 * cos(2.0 * M_PI * k / N) + 0.08 * cos(4. * M_PI * k / N); // Blackman window
-        //w=0.5; // No window
+        w = 0.5 + 0.5 * cos(2.0 * M_PI * k / N); // Hanning window
+        //w = 0.42 + 0.5 * cos(2.0 * M_PI * k / N) + 0.08 * cos(4. * M_PI * k / N); // Blackman window
+        //w=1; // No window
         z *= w; 
         z *= 2*cexp(-1*I * tune * k);
         fir_imp[i] = z;
@@ -77,9 +81,18 @@ void make_filter(float rate, int N, float bw, float centre) {
         blk_len = length/4;
     }
 
-    printf(" fft_len = %d\n blk_len = %d\n fir_len = %d\n", fft_len,blk_len,fir_len);
+    //printf(" fft_len = %d\n blk_len = %d\n fir_len = %d\n", fft_len,blk_len,fir_len);
     
-
+    // okay, so we know how big to make the FFT blocks
+    if (fwd) fftw_destroy_plan(fwd);
+    if (bwd) fftw_destroy_plan(bwd);
+    if (imp) fftw_destroy_plan(imp);
+    fwd = fftw_plan_dft_1d(fft_len, fir_in, fir_fft, FFTW_FORWARD, FFTW_ESTIMATE);
+    bwd = fftw_plan_dft_1d(fft_len, fir_fft, fir_in, FFTW_BACKWARD, FFTW_ESTIMATE); 
+    imp = fftw_plan_dft_1d(fft_len, fir_imp, fir_imp_fft, FFTW_FORWARD, FFTW_ESTIMATE); 
+    
+    // now we can FFT the impulse
+    fftw_execute(imp);   
 }
 
 int sdr_process(SDR_DATA *sdr) {
@@ -162,6 +175,10 @@ void fft_teardown(SDR_DATA *sdr) {
     fftw_free(fft->samples);
     fftw_free(fft->out);
     free(sdr->fft);
+    
+    if (fwd) fftw_destroy_plan(fwd);
+    if (bwd) fftw_destroy_plan(bwd);
+    if (imp) fftw_destroy_plan(imp);
 
 }
 

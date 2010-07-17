@@ -54,4 +54,5 @@ typedef struct {
 
 int sdr_process(SDR_DATA *sdr);
 void make_filter(float rate, int N, float bw, float centre);
+complex fir_imp_fft[];
 #endif

@@ -23,7 +23,8 @@ enum {
 };
 
 
-extern FFT_DATA *filter;
+extern complex fir_imp_fft[];
+extern int fir_len;
 
 static gboolean sdr_waterfall_expose(GtkWidget *wf, GdkEventExpose *event);
 static void sdr_waterfall_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec);
@@ -258,14 +259,14 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     cairo_stroke(cr);
     
-    /*
-    cairo_set_source_rgba(cr, 0, 0, 1, 1);
-    for(i=0; i< FFT_SIZE; i++) {
+    
+    cairo_set_source_rgba(cr, .5, .5, 1, 1);
+    for(i=0; i < FFT_SIZE; i++) {
         cairo_move_to(cr, i, height/2);
-        cairo_line_to(cr, i, height/2+(cabs(filter->out[i])*height/2));
+        cairo_line_to(cr, i, height/2-(cabs(fir_imp_fft[i])*height/5));
         cairo_stroke(cr);
     }
-    */
+    
     cairo_destroy (cr);
     return FALSE;
 }
