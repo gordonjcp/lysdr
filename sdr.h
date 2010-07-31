@@ -31,6 +31,8 @@ typedef struct {
     complex loPhase;    // local oscillator phase angle (sets tuning)
     double *output;     // pointer to output samples
     
+    void *filter;       // hold the filter data
+    
     GtkObject *tuning;  // adjustment for tuning
     GtkObject *lp_tune; // adjustment for filter lowpass
     GtkObject *hp_tune; // adjustment for filter highpass
@@ -40,7 +42,6 @@ typedef struct {
     
     // things to keep track of between callbacks
     complex dc_remove;
-    float agcPeak;
     float agcGain;
     // jack parameters
     unsigned int size;  // periodsize

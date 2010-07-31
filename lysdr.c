@@ -22,8 +22,7 @@ int main(int argc, char *argv[]) {
     
     sdr->loVector = 1;
     sdr->agcGain = 0;
-    sdr->agcPeak = 0;
-        
+       
     audio_connect(sdr);
     printf("about to do fft-setup\n");
     fft_setup(sdr);

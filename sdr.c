@@ -47,7 +47,7 @@ int sdr_process(SDR_DATA *sdr) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
         sdr->output[i] = y*10; // FIXME level
     }
-
+    // apply some AGC here
 }
 
 void fft_setup(SDR_DATA *sdr) {
@@ -68,10 +68,5 @@ void fft_teardown(SDR_DATA *sdr) {
     fftw_free(fft->samples);
     fftw_free(fft->out);
     free(sdr->fft);
-/*    
-    if (fwd) fftw_destroy_plan(fwd);
-    if (bwd) fftw_destroy_plan(bwd);
-    if (imp) fftw_destroy_plan(imp);
-*/
 }
 

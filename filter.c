@@ -7,7 +7,7 @@
 
 
 void make_filter(float sample_rate, int taps, float bw, float centre) { return; } //FIXME
-void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
+static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
     float K = bw * taps / sample_rate;
     float w;
@@ -28,6 +28,14 @@ void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, floa
         fir_imp[i] = z;
         i++;
     }
+
+}
+/* scratchpad below here */
+/*---------------------------------------------------------*/
+
+#if 0
+
+void fft_impulse() {
     // at this point, fir_imp[] contains our desired impulse.  Now to FFT it ;-)
 
 #if 0
@@ -67,7 +75,6 @@ void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, floa
 #endif
 }
 
-#if 0
 void fft_filter() {
     // FIXME - check if this is ever needed
     // Check if in-buffer is shorter than blk_len.
