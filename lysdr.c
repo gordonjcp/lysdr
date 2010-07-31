@@ -5,6 +5,7 @@
 
 #include "sdr.h"
 #include "audio_jack.h"
+#include "filter.h"
 
 extern void gui_display();
 

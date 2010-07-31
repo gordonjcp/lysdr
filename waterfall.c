@@ -23,8 +23,6 @@ enum {
 };
 
 
-extern complex fir_imp_fft[];
-extern int fir_len;
 
 static gboolean sdr_waterfall_expose(GtkWidget *wf, GdkEventExpose *event);
 static void sdr_waterfall_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec);
@@ -258,14 +256,6 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_line_to(cr, width, wf->pixelrow);
 
     cairo_stroke(cr);
-    
-    cairo_scale(cr, 1, 1);
-    cairo_set_source_rgba(cr, .5, .5, 1, 1);
-    for(i=0; i < fir_len; i++) {
-        cairo_move_to(cr, i, height/2);
-        cairo_line_to(cr, i, height/2-(cabs(fir_imp_fft[i])*height/5));
-        cairo_stroke(cr);
-    }
     
     cairo_destroy (cr);
     return FALSE;

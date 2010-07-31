@@ -35,12 +35,7 @@ typedef struct {
     GtkObject *lp_tune; // adjustment for filter lowpass
     GtkObject *hp_tune; // adjustment for filter highpass
      
-     
     FFT_DATA *fft;
-    FFT_DATA *fir_fwd;
-    FFT_DATA *fir_back;
-    FFT_DATA *fir_coeff;
-    
     int fft_size;
     
     // things to keep track of between callbacks
@@ -53,6 +48,4 @@ typedef struct {
 } SDR_DATA;
 
 int sdr_process(SDR_DATA *sdr);
-void make_filter(float rate, int N, float bw, float centre);
-complex fir_imp_fft[];
 #endif
