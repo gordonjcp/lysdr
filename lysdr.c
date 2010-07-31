@@ -22,18 +22,21 @@ int main(int argc, char *argv[]) {
     
     sdr->loVector = 1;
     sdr->agcGain = 0;
+    sdr->filter = filter_fir_new(250, sdr->size);
+    filter_fir_set_response(sdr->filter, sdr->samplerate, 3100, 1850);
        
     audio_connect(sdr);
     printf("about to do fft-setup\n");
     fft_setup(sdr);
     printf("about to do make_filter\n");
-    make_filter(sdr->samplerate, 256, 3100, 1850);
+    //make_filter(sdr->samplerate, 256, 3100, 1850);
     
     gtk_init(&argc, &argv);
     
     gui_display(sdr);
         
     gtk_main();
+    filter_fir_destroy(sdr->filter);
     fft_teardown(sdr);
     audio_stop(sdr);
     free(sdr);

@@ -72,7 +72,7 @@ static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
     }
     gtk_adjustment_set_upper(GTK_ADJUSTMENT(sdr->hp_tune), tune);
     gtk_adjustment_changed(GTK_ADJUSTMENT(sdr->hp_tune));
-    make_filter(sdr->samplerate, 256, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
+    //make_filter(sdr->samplerate, 256, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
     gtk_widget_queue_draw(GTK_WIDGET(wfdisplay));
 }
 
@@ -88,7 +88,7 @@ static void highpass_changed(GtkWidget *widget, gpointer psdr) {
     }
     gtk_adjustment_set_lower(GTK_ADJUSTMENT(sdr->lp_tune), tune);
     gtk_adjustment_changed(GTK_ADJUSTMENT(sdr->lp_tune));
-    make_filter(sdr->samplerate, 256, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
+    //make_filter(sdr->samplerate, 256, (lp_tune-hp_tune), (lp_tune-hp_tune)/2 + hp_tune);
     gtk_widget_queue_draw(GTK_WIDGET(wfdisplay));
 }
 

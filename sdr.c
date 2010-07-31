@@ -8,6 +8,7 @@
 #include <complex.h>
 #include <fftw3.h>
 
+#include "filter.h"
 #include "sdr.h"
 
 static gint blk_pos=0;
@@ -19,6 +20,7 @@ int sdr_process(SDR_DATA *sdr) {
     double y, accI, accQ;
     complex c;
     FFT_DATA *fft = sdr->fft;
+    filter_fir_t *filter = sdr->filter;
     float agcGain = sdr->agcGain;
     float agcPeak = 0;
 
@@ -41,6 +43,10 @@ int sdr_process(SDR_DATA *sdr) {
 		sdr->iqSample[i] *= sdr->loVector;
     	sdr->loVector *= sdr->loPhase;
 	}
+
+    filter->samples = sdr->iqSample;
+    
+    filter_fir_process(filter);
 
     // this demodulates LSB
     for (i=0; i<sdr->size; i++) {
