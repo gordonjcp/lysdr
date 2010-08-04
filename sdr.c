@@ -23,21 +23,40 @@ int sdr_process(SDR_DATA *sdr) {
     filter_fir_t *filter = sdr->filter;
     float agcGain = sdr->agcGain;
     float agcPeak = 0;
+    int size = sdr->size;
+    
+    
+    int mvsmp = sdr->fft_size - size;
 
     // remove DC with a highpass filter
-    for (i = 0; i < sdr->size; i++) {       // DC removal; R.G. Lyons page 553
+    for (i = 0; i < size; i++) {       // DC removal; R.G. Lyons page 553
                 c = sdr->iqSample[i] + sdr->dc_remove * 0.95;
                 sdr->iqSample[i] = c - sdr->dc_remove;
                 sdr->dc_remove = c;
     }
 
     // copy this frame to FFT for display
-    for (i=0; i<sdr->size; i++) {
-        fft->samples[i] = sdr->iqSample[i];
+#if 0
+    if (fft->status != READY) {
+        for (i=0; i<size; i++) {
+            fft->samples[i+fft->index] = sdr->iqSample[i];
+        }
+        fft->index += size;
+        if (fft->index > FFT_SIZE) {   
+            fft->status = READY;
+            fftw_execute(fft->plan);
+        }
     }
-    fft->status = READY;
+#else
+    //memmove(fft->samples, fft->samples+(size*sizeof(complex)), mvsmp*sizeof(complex));
+    for (i=0; i<FFT_SIZE-size; i++) {
+        fft->samples[i] = fft->samples[i+size];
+    }
+    for (i=0; i<size; i++) {
+        fft->samples[i+(FFT_SIZE-size)] = sdr->iqSample[i];
+    }
     fftw_execute(fft->plan);
-  
+#endif
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
 		sdr->iqSample[i] *= sdr->loVector;
@@ -49,7 +68,7 @@ int sdr_process(SDR_DATA *sdr) {
     filter_fir_process(filter);
 
     // this demodulates LSB
-    for (i=0; i<sdr->size; i++) {
+    for (i=0; i < sdr->size; i++) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
         sdr->output[i] = y*10; // FIXME level
     }

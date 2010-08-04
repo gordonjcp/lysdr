@@ -144,7 +144,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_widget_show_all(mainWindow);
     
     // connect handlers
-    g_timeout_add(125,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+    g_timeout_add(50,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);

@@ -28,8 +28,6 @@ int main(int argc, char *argv[]) {
     audio_connect(sdr);
     printf("about to do fft-setup\n");
     fft_setup(sdr);
-    printf("about to do make_filter\n");
-    //make_filter(sdr->samplerate, 256, 3100, 1850);
     
     gtk_init(&argc, &argv);
     
