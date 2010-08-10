@@ -31,8 +31,6 @@ typedef struct {
     complex loPhase;    // local oscillator phase angle (sets tuning)
     double *output;     // pointer to output samples
     
-    void *filter;       // hold the filter data
-    
     GtkObject *tuning;  // adjustment for tuning
     GtkObject *lp_tune; // adjustment for filter lowpass
     GtkObject *hp_tune; // adjustment for filter highpass
@@ -46,7 +44,7 @@ typedef struct {
     // jack parameters
     unsigned int size;  // periodsize
     unsigned int sample_rate;    // samplerate
-} SDR_DATA;
+} SDRData;
 
-int sdr_process(SDR_DATA *sdr);
+int sdr_process(SDRData *sdr);
 #endif

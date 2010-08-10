@@ -7,6 +7,16 @@
 #include "filter.h"
 #include "sdr.h"
 
+static complex *impulse;
+static complex *samples;
+static double *buf_I;
+static double *buf_Q;
+static double *imp_I;
+static double *imp_Q;
+static int index;
+static int size;
+static int taps;
+
 static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
     float K = bw * taps / sample_rate;
@@ -30,64 +40,67 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
     }
 }
 
-filter_fir_t *filter_fir_new(int taps, int size) {
-    filter_fir_t *filter = malloc(sizeof(filter_fir_t));
-    filter->impulse = malloc(sizeof(complex)*taps);
-    filter->imp_I = malloc(sizeof(double)*taps);
-    filter->imp_Q = malloc(sizeof(double)*taps);
-    filter->buf_I = malloc(sizeof(double)*taps);
-    filter->buf_Q = malloc(sizeof(double)*taps);
+void *filter_fir_new(int taps_i, int size_i) {
+    size = size_i;
+    taps = taps_i;
+    impulse = malloc(sizeof(complex)*taps);
+    imp_I = malloc(sizeof(double)*taps);
+    imp_Q = malloc(sizeof(double)*taps);
+    buf_I = malloc(sizeof(double)*taps);
+    buf_Q = malloc(sizeof(double)*taps);
 
-    filter->size = size;
-    filter->taps = taps;
-    filter->index = 0;
-    return filter;
+
+    index = 0;
+
 }
 
-void filter_fir_destroy(filter_fir_t *filter) {
-    if (filter) {
-        if (filter->impulse) free(filter->impulse);
-        if (filter->imp_I) free(filter->imp_I);
-        if (filter->imp_Q) free(filter->imp_Q);
-        if (filter->buf_I) free(filter->buf_I);
-        if (filter->buf_Q) free(filter->buf_Q);
+void filter_fir_destroy() {
 
-        free(filter);
-    }
+        if (impulse) free(impulse);
+                printf("2\n");
+        if (imp_I) free(imp_I);
+                printf("3\n");
+        if (imp_Q) free(imp_Q);
+                printf("4\n");
+        if (buf_I) free(buf_I);
+                printf("5\n");
+        if (buf_Q) free(buf_Q);
+                printf("6\n");
 }
 
-void filter_fir_set_response(filter_fir_t *filter, int sample_rate, float bw, float centre) {
+void filter_fir_set_response(int sample_rate, float bw, float centre) {
     // plop an impulse into the appropriate array
     int i;
-    make_impulse(filter->impulse, sample_rate, filter->taps, bw, centre);
-    for (i=0; i<filter->taps; i++) {
-        filter->imp_I[i] = creal(filter->impulse[i]);
-        filter->imp_Q[i] = cimag(filter->impulse[i]);
-    }   
+    make_impulse(impulse, sample_rate, taps, bw, centre);
+    
+    for (i=0; i<taps; i++) {
+       imp_I[i] = creal(impulse[i]);
+       imp_Q[i] = cimag(impulse[i]);
+    } 
 }
 
-void filter_fir_process(filter_fir_t *filter) {
+void filter_fir_process(SDRData *sdr) {
     int i, j, k;
     complex c;
     double accI, accQ;
-    complex out[filter->size];
+    complex out[size];
         
-    for (i = 0; i < filter->size; i++) {
-        c = filter->samples[i];
-        filter->buf_I[filter->index] = creal(c);
-    	filter->buf_Q[filter->index] = cimag(c);
+    for (i = 0; i < size; i++) {
+        c = sdr->iqSample[i];
+        buf_I[index] = creal(c);
+    	buf_Q[index] = cimag(c);
         accI = accQ = 0;
-        j = filter->index;
-    	for (k = 0; k < filter->taps; k++) {
-            accI += filter->buf_I[j] * filter->imp_I[k];
-            accQ += filter->buf_Q[j] * filter->imp_Q[k];
-            if (++j >= filter->taps) j = 0;
+        j = index;
+    	for (k = 0; k < taps; k++) {
+            accI += buf_I[j] * imp_I[k];
+            accQ += buf_Q[j] * imp_Q[k];
+            if (++j >= taps) j = 0;
         }
         out[i] = accI + I * accQ;
-        if (++filter->index >= filter->taps) filter->index = 0;
+        if (++index >= taps) index = 0;
     }
-    for(i=0; i<filter->size; i++) {
-        filter->samples[i] = out[i];
+    for(i=0; i<size; i++) {
+        sdr->iqSample[i] = out[i];
     }
 }
 

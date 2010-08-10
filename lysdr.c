@@ -10,23 +10,23 @@
 extern void gui_display();
 
 
-SDR_DATA *sdr;
+SDRData *sdr;
 guchar data[4*FFT_SIZE];
 int main(int argc, char *argv[]) {
     printf("lysdr starting\n");
     
-    sdr = malloc(sizeof(SDR_DATA));
+    sdr = malloc(sizeof(SDRData));
     audio_start(sdr);
     
     sdr->loPhase = cexp((I * -2.0 * 3.14159) / sdr->sample_rate);
     
     sdr->loVector = 1;
     sdr->agcGain = 0;
-    sdr->filter = filter_fir_new(250, sdr->size);
-    filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
+    filter_fir_new(250, sdr->size);
+    filter_fir_set_response(sdr->sample_rate, 3100, 1850);
        
     audio_connect(sdr);
-    printf("about to do fft-setup\n");
+
     fft_setup(sdr);
     
     gtk_init(&argc, &argv);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     gui_display(sdr);
         
     gtk_main();
-    filter_fir_destroy(sdr->filter);
+    //filter_fir_destroy();
     fft_teardown(sdr);
     audio_stop(sdr);
     free(sdr);

@@ -8,7 +8,7 @@
 #include "waterfall.h"
 
 extern guchar data[FFT_SIZE*4];
-extern SDR_DATA *sdr;
+extern SDRData *sdr;
 
     GtkWidget *label;
     GtkWidget *wfdisplay;
@@ -52,8 +52,8 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 
 static void tuning_changed(GtkWidget *widget, gpointer psdr) {
-    SDR_DATA *sdr;
-    sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
+    SDRData *sdr;
+    sdr = (SDRData *) psdr;    // void* cast back to SDRData*
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
@@ -61,8 +61,8 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
 }
 
 static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
-    SDR_DATA *sdr;
-    sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
+    SDRData *sdr;
+    sdr = (SDRData *) psdr;    // void* cast back to SDRData*
     float tune = GTK_ADJUSTMENT(widget)->value;
     float hp_tune = GTK_ADJUSTMENT(sdr->hp_tune)->value;
     float lp_tune = GTK_ADJUSTMENT(sdr->lp_tune)->value;
@@ -77,8 +77,8 @@ static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
 }
 
 static void highpass_changed(GtkWidget *widget, gpointer psdr) {
-    SDR_DATA *sdr;
-    sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
+    SDRData *sdr;
+    sdr = (SDRData *) psdr;    // void* cast back to SDRData*
     float tune = GTK_ADJUSTMENT(widget)->value;
     float hp_tune = GTK_ADJUSTMENT(sdr->hp_tune)->value;
     float lp_tune = GTK_ADJUSTMENT(sdr->lp_tune)->value;
@@ -92,7 +92,7 @@ static void highpass_changed(GtkWidget *widget, gpointer psdr) {
     gtk_widget_queue_draw(GTK_WIDGET(wfdisplay));
 }
 
-void gui_display(SDR_DATA *sdr)
+void gui_display(SDRData *sdr)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     GtkWidget *waterfall;

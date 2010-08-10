@@ -14,13 +14,12 @@
 static gint blk_pos=0;
 static int n;
 
-int sdr_process(SDR_DATA *sdr) {
+int sdr_process(SDRData *sdr) {
     // actually do the SDR bit
     int i, j, k;
     double y, accI, accQ;
     complex c;
     FFT_DATA *fft = sdr->fft;
-    filter_fir_t *filter = sdr->filter;
     float agcGain = sdr->agcGain;
     float agcPeak = 0;
     int size = sdr->size;
@@ -63,9 +62,8 @@ int sdr_process(SDR_DATA *sdr) {
     	sdr->loVector *= sdr->loPhase;
 	}
 
-    filter->samples = sdr->iqSample;
     
-    filter_fir_process(filter);
+    filter_fir_process(sdr);
 
     // this demodulates LSB
     for (i=0; i < sdr->size; i++) {
@@ -75,7 +73,7 @@ int sdr_process(SDR_DATA *sdr) {
     // apply some AGC here
 }
 
-void fft_setup(SDR_DATA *sdr) {
+void fft_setup(SDRData *sdr) {
     sdr->fft = (FFT_DATA *)malloc(sizeof(FFT_DATA));
     sdr->fft_size = FFT_SIZE;
     FFT_DATA *fft = sdr->fft;
@@ -87,7 +85,7 @@ void fft_setup(SDR_DATA *sdr) {
 	fft->index = 0;
 }
 
-void fft_teardown(SDR_DATA *sdr) {
+void fft_teardown(SDRData *sdr) {
     FFT_DATA *fft = sdr->fft;
     fftw_destroy_plan(fft->plan);
     fftw_free(fft->samples);
