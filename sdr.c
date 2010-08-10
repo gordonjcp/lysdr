@@ -70,6 +70,7 @@ int sdr_process(SDRData *sdr) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
         sdr->output[i] = y*10; // FIXME level
     }
+
     // apply some AGC here
 }
 

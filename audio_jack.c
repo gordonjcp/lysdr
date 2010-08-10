@@ -75,20 +75,17 @@ int audio_start(SDRData *sdr) {
 	// save some info in the SDR
 	sdr->size = jack_get_buffer_size(client);
 	sdr->sample_rate = jack_get_sample_rate(client);
-	sdr->iqSample = (complex *)malloc(sizeof(complex)*sdr->size);
-	sdr->output = (double *)malloc(sizeof(double)*sdr->size);
+	sdr->iqSample = g_new0(complex, sdr->size);
+	sdr->output = g_new0(double, sdr->size);
 }
 
 int audio_stop(SDRData *sdr) {
     // remove the connection to the jack server
     // we may also want to clean up any audio buffers
-    printf("audio_stop\n");
     jack_client_close (client);
-    printf("free iqSample\n");
-    if (sdr->iqSample) free(sdr->iqSample);
-    printf("free output\n");
-    if (sdr->output) free(sdr->output);
-    printf("and finally done\n");
+    if (sdr->iqSample) g_free(sdr->iqSample);
+    //if (sdr->output) g_free(sdr->output);
+
 }
 
 int audio_connect(SDRData *sdr) {
