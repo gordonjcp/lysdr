@@ -55,6 +55,7 @@ int sdr_process(SDRData *sdr) {
         fft->samples[i+(FFT_SIZE-size)] = sdr->iqSample[i];
     }
     fftw_execute(fft->plan);
+    fft->status = READY;
 #endif
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
