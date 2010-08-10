@@ -18,12 +18,12 @@ int main(int argc, char *argv[]) {
     sdr = malloc(sizeof(SDR_DATA));
     audio_start(sdr);
     
-    sdr->loPhase = cexp((I * -2.0 * 3.14159) / sdr->samplerate);
+    sdr->loPhase = cexp((I * -2.0 * 3.14159) / sdr->sample_rate);
     
     sdr->loVector = 1;
     sdr->agcGain = 0;
     sdr->filter = filter_fir_new(250, sdr->size);
-    filter_fir_set_response(sdr->filter, sdr->samplerate, 3100, 1850);
+    filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
        
     audio_connect(sdr);
     printf("about to do fft-setup\n");

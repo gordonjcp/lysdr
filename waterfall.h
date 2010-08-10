@@ -1,5 +1,6 @@
 /* waterfall.h */
-/* gordon@gjcp.net */
+/* Copyright 2010 Gordon JC Pearce <gordon@gjcp.net> */
+
 
 #ifndef __WATERFALL_H
 #define __WATERFALL_H
@@ -12,45 +13,42 @@ typedef struct _SDRWaterfall            SDRWaterfall;
 typedef struct _SDRWaterfallClass       SDRWaterfallClass;
 typedef struct _SDRWaterfallPrivate     SDRWaterfallPrivate;
 
+enum {
+    P_NONE,
+    P_TUNING,
+    P_HIGHPASS,
+    P_LOWPASS,
+    P_BANDSPREAD
+};
+
 struct _SDRWaterfall {
     GtkDrawingArea parent;
     
     GtkAdjustment *tuning;
     GtkAdjustment *lp_tune;
     GtkAdjustment *hp_tune;
-
-    gint mode;
-
-    gint drag;              // what we're dragging (if anything)
+    
+    guchar *pixels;
+    
+    gint cursor_pos;    // pixel position for tuning cursor
+    gint scroll_pos;    // which line the scroller is on
+    
     gint prelight;
-    gint last_prelight;
-    gint dragoffset;        // where we clicked when dragging the whole cursor
-    guchar *pixels;     // actual pixel data for the waterfall
-    gint pixelsize;
-    gint pixelrow;      // where to draw the next row
+    gint drag;
+    gint click_pos;
+    gdouble bandspread;
+    gint sample_rate;
+    gint fft_size;
 };
 
 struct _SDRWaterfallClass {
     GtkDrawingAreaClass parent_class;
+    // custom signals
 //    void (* tuning_changed) (SDRWaterfall *wf, float tuning);
 //    void (* filter_changed) (SDRWaterfall *wf, float lowpass);
 };
 
 struct _SDRWaterfallPrivate {
-};
-
-enum dragstate {
-    NONE,
-    LOWPASS,
-    HIGHPASS,
-    TUNE,
-    TUNE_GRAB
-};
-
-enum {
-    TUNING_CHANGED,
-    FILTER_CHANGED,
-    LAST_SIGNAL
 };
 
 #define SDR_TYPE_WATERFALL             (sdr_waterfall_get_type ())
@@ -63,8 +61,17 @@ enum {
 
 G_END_DECLS
 
-GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune);
-void sdr_waterfall_update(GtkWidget *widget, guchar row[]);
+#define LOOSE 2
+#define WITHIN(x, p) (x-1 > p-LOOSE) && (x-1 < p + LOOSE)
+
+GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size);
+float sdr_waterfall_get_tuning(SDRWaterfall *wf);
+float sdr_waterfall_get_lowpass(SDRWaterfall *wf);
+float sdr_waterfall_get_highpass(SDRWaterfall *wf);
+
+void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value);
+void sdr_waterfall_update(GtkWidget *widget, guchar *row);
+
 #endif /* __WATERFALL_H */
 
 

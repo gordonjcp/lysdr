@@ -45,7 +45,7 @@ typedef struct {
     float agcGain;
     // jack parameters
     unsigned int size;  // periodsize
-    unsigned int samplerate;    // samplerate
+    unsigned int sample_rate;    // samplerate
 } SDR_DATA;
 
 int sdr_process(SDR_DATA *sdr);

@@ -74,7 +74,7 @@ int audio_start(SDR_DATA *sdr) {
 	
 	// save some info in the SDR
 	sdr->size = jack_get_buffer_size(client);
-	sdr->samplerate = jack_get_sample_rate(client);
+	sdr->sample_rate = jack_get_sample_rate(client);
 	sdr->iqSample = (complex *)malloc(sizeof(complex)*sdr->size);
 	sdr->output = (double *)malloc(sizeof(double)*sdr->size);
 }

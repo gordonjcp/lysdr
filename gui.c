@@ -56,7 +56,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     sdr = (SDR_DATA *) psdr;    // void* cast back to SDR_DATA*
     float tune = GTK_ADJUSTMENT(widget)->value;
 
-    sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->samplerate);
+    sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
     gtk_widget_queue_draw(GTK_WIDGET(wfdisplay));
 }
 
@@ -111,7 +111,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_container_add(GTK_CONTAINER(mainWindow), vbox);
 
     // tuning scale
-    tune_max = (float)sdr->samplerate;
+    tune_max = (float)sdr->sample_rate;
     sdr->tuning = gtk_adjustment_new(5807, -tune_max/2, tune_max/2, 10, 100, 0);
     tuneslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->tuning));
     gtk_box_pack_start(GTK_BOX(vbox), tuneslider, TRUE, TRUE, 0);
@@ -133,7 +133,7 @@ void gui_display(SDR_DATA *sdr)
     gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
     gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
 
-    wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune));
+    wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 
