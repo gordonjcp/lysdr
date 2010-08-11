@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     
     gui_display(sdr);
     
-    gtk_adjustment_set_value(sdr->tuning, 1015);
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 1015);
        
     gtk_main();
     //filter_fir_destroy();

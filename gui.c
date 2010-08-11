@@ -47,7 +47,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
     y = (2000-sdr->agcGain)/2000;
     if (y<0) y = 0;
     if (y>1) y = 1;
-    gtk_progress_bar_set_fraction(progress, y);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress), y);
 
   return TRUE;
 }
