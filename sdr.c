@@ -76,9 +76,6 @@ int sdr_process(SDRData *sdr) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
         sdr->output[i] = y;
     }
-
-
-    
 }
 
 void fft_setup(SDRData *sdr) {
