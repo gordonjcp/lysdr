@@ -20,12 +20,10 @@ int sdr_process(SDRData *sdr) {
     double y, accI, accQ;
     complex c;
     FFT_DATA *fft = sdr->fft;
-    float agcGain = sdr->agcGain;
-    float agcPeak = 0;
     int size = sdr->size;
     
-    
-    int mvsmp = sdr->fft_size - size;
+    float agcGain = sdr->agcGain;
+    float agcPeak = 0;
 
     // remove DC with a highpass filter
     for (i = 0; i < size; i++) {       // DC removal; R.G. Lyons page 553
@@ -34,20 +32,7 @@ int sdr_process(SDRData *sdr) {
                 sdr->dc_remove = c;
     }
 
-    // copy this frame to FFT for display
-#if 0
-    if (fft->status != READY) {
-        for (i=0; i<size; i++) {
-            fft->samples[i+fft->index] = sdr->iqSample[i];
-        }
-        fft->index += size;
-        if (fft->index > FFT_SIZE) {   
-            fft->status = READY;
-            fftw_execute(fft->plan);
-        }
-    }
-#else
-    //memmove(fft->samples, fft->samples+(size*sizeof(complex)), mvsmp*sizeof(complex));
+    // copy this period to FFT buffer
     for (i=0; i<FFT_SIZE-size; i++) {
         fft->samples[i] = fft->samples[i+size];
     }
@@ -56,7 +41,7 @@ int sdr_process(SDRData *sdr) {
     }
     fftw_execute(fft->plan);
     fft->status = READY;
-#endif
+
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
 		sdr->iqSample[i] *= sdr->loVector;
@@ -66,13 +51,34 @@ int sdr_process(SDRData *sdr) {
     
     filter_fir_process(sdr);
 
+    // apply some AGC here
+    for (i = 0; i < sdr->size; i++) {
+        y = cabs(sdr->iqSample[i]);
+        if (agcPeak < y) agcPeak = y;
+    }
+    if (agcPeak == 0) agcPeak = 0.00001;    // don't be zero, in case we have digital silence
+    y = agcPeak * agcGain;  // y is the peak level scaled by the current gain
+
+    if (y <= 1) {       // Current level is below the soundcard max, increase gain
+        agcGain += (1/ agcPeak - agcGain) * 0.005;
+    } else {                   // decrease gain
+        agcGain += (1 / agcPeak - agcGain);
+    }
+    y = agcGain * 0.5; // change volume
+    for (i = 0; i < sdr->size; i++){
+        sdr->iqSample[i] *= y;
+    }
+    
+    sdr->agcGain = agcGain;
+
     // this demodulates LSB
     for (i=0; i < sdr->size; i++) {
 	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-        sdr->output[i] = y*10; // FIXME level
+        sdr->output[i] = y;
     }
 
-    // apply some AGC here
+
+    
 }
 
 void fft_setup(SDRData *sdr) {
