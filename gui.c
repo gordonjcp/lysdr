@@ -55,11 +55,13 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     SDRData *sdr;
+    char l[20];
     sdr = (SDRData *) psdr;    // void* cast back to SDRData*
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
-    gtk_widget_queue_draw(GTK_WIDGET(wfdisplay));
+    sprintf(l, "<tt>%d</tt>",(int)(tune));
+    gtk_label_set_markup(GTK_LABEL(label), l);
 }
 
 static void lowpass_changed(GtkWidget *widget, gpointer psdr) {
@@ -114,7 +116,7 @@ void gui_display(SDRData *sdr)
 
     // tuning scale
     tune_max = (float)sdr->sample_rate;
-    sdr->tuning = gtk_adjustment_new(5807, -tune_max/2, tune_max/2, 10, 100, 0);
+    sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 10, 100, 0);
     //tuneslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->tuning));
     //gtk_box_pack_start(GTK_BOX(vbox), tuneslider, TRUE, TRUE, 0);
     
@@ -127,8 +129,8 @@ void gui_display(SDRData *sdr)
     lpslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->lp_tune));
     hpslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->hp_tune));
     
-    gtk_box_pack_start(GTK_BOX(hbox), hpslider, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), lpslider, TRUE, TRUE, 0);
+    //gtk_box_pack_start(GTK_BOX(hbox), hpslider, TRUE, TRUE, 0);
+    //gtk_box_pack_start(GTK_BOX(hbox), lpslider, TRUE, TRUE, 0);
 
     // VFO readout
     label = gtk_label_new (NULL);
@@ -146,7 +148,7 @@ void gui_display(SDRData *sdr)
     gtk_widget_show_all(mainWindow);
     
     // connect handlers
-    g_timeout_add(50,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+    g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);

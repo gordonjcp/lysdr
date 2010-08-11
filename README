@@ -13,9 +13,11 @@ IQ file.
 
 Drag the slider to tune the radio.  The number above the slider is the
 frequency offset in Hz from the SDR centre (local oscillator) frequency.
-Filter bandwith is adjustable, with hardcoded 250 taps in the FIR.
+Right-drag for bandspread tuning (1Hz steps).
+
 At present lysdr only demodulates LSB, but can be adapted for USB.
 
-BUGS:
+KNOWN BUGS:
 Crashes when resizing
 after resizing, the scale no longer accurately tracks the tuning
+report any more to gordon@gjcp.net
