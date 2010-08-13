@@ -33,14 +33,15 @@ int sdr_process(SDRData *sdr) {
     }
 
     // copy this period to FFT buffer
+    
     for (i=0; i<FFT_SIZE-size; i++) {
         fft->samples[i] = fft->samples[i+size];
     }
+
     for (i=0; i<size; i++) {
         fft->samples[i+(FFT_SIZE-size)] = sdr->iqSample[i];
     }
-    fftw_execute(fft->plan);
-    fft->status = READY;
+
 
     // shift frequency
     for (i = 0; i < sdr->size; i++) {

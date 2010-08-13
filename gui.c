@@ -21,13 +21,13 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
     fftw_complex z;
     FFT_DATA *fft= sdr->fft;
 
-    if (fft->status != READY) return TRUE;
+    //if (fft->status != READY) return TRUE;
 
-    if (fft->status == READY) {
-        //fftw_execute(fft->plan);
+    //if (fft->status == READY) {
+        fftw_execute(fft->plan);
         fft->status=EMPTY;
         fft->index=0;
-      }
+    //  }
     hi = FFT_SIZE/2;
     j=0;
     for(i=0; i<FFT_SIZE; i++) {
@@ -148,6 +148,7 @@ void gui_display(SDRData *sdr)
     gtk_widget_show_all(mainWindow);
     
     // connect handlers
+    // FIXME - determine minimum update rate from jack latency
     g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
