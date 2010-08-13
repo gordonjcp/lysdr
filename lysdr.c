@@ -15,6 +15,13 @@ guchar data[4*FFT_SIZE];
 int main(int argc, char *argv[]) {
     printf("lysdr starting\n");
     
+    if( ! g_thread_supported() )
+        g_thread_init( NULL );
+
+    gdk_threads_init();
+    gdk_threads_enter();
+   
+    
     sdr = malloc(sizeof(SDRData));
     audio_start(sdr);
     
@@ -40,4 +47,5 @@ int main(int argc, char *argv[]) {
     fft_teardown(sdr);
     audio_stop(sdr);
     free(sdr);
+        gdk_threads_leave();
 }
