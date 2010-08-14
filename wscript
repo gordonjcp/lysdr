@@ -26,8 +26,8 @@ def build(bld):
     # 1. A simple program
     bld(
         features = 'cc cprogram',
-        # source = bld.path.ant_glob('./*.c'),
-        source = ('audio_jack.c filter.c gui.c lysdr.c sdr.c waterfall/waterfall.c'),
+        source = bld.path.ant_glob('**/*.c'),
+        #source = ('audio_jack.c filter.c gui.c lysdr.c sdr.c waterfall/waterfall.c'),
         #include = ['.', './waterfall',],
         target = 'gui',
         uselib = "GTK JACK FFTW",
