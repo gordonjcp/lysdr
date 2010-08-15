@@ -19,8 +19,9 @@ sdr_data_t *sdr_new() {
     sdr_data_t *sdr;
     
     sdr = malloc(sizeof(sdr_data_t));
-    sdr->loVector = 1;
-    sdr->agcGain = 0;
+    sdr->loVector = 1;  // start the local oscillator
+    sdr->loPhase = 1;   // this value is bogus but we're going to set the frequency anyway
+    sdr->agcGain = 0;   // start off as quiet as possible
     
 }
 
@@ -49,23 +50,15 @@ int sdr_process(sdr_data_t *sdr) {
     }
 
     // copy this period to FFT buffer
-    
-    for (i=0; i<FFT_SIZE-size; i++) {
-        fft->samples[i] = fft->samples[i+size];
-    }
-
-    for (i=0; i<size; i++) {
-        fft->samples[i+(FFT_SIZE-size)] = sdr->iqSample[i]; // segfault happened here
-    }
-
+    memmove(fft->samples, fft->samples+size, sizeof(complex)*(FFT_SIZE-size));
+    memmove(fft->samples+FFT_SIZE-size, sdr->iqSample, sizeof(complex)*size);
 
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
 		sdr->iqSample[i] *= sdr->loVector;
     	sdr->loVector *= sdr->loPhase;
 	}
-
-    
+	
     filter_fir_process(sdr->filter, sdr->iqSample);
 
     // apply some AGC here

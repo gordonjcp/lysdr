@@ -32,7 +32,7 @@ typedef struct {
     complex *iqSample;  // the array of incoming samples
     complex loVector;   // local oscillator vector
     complex loPhase;    // local oscillator phase angle (sets tuning)
-    double *output;     // pointer to output samples
+    gdouble *output;     // pointer to output samples
 
     GtkObject *tuning;  // adjustment for tuning
     GtkObject *lp_tune; // adjustment for filter lowpass
@@ -40,16 +40,17 @@ typedef struct {
     gint mode;          // demodulator mode
 
     fft_data_t *fft;
-    int fft_size;
+    gint fft_size;
     
     filter_fir_t *filter;
 
     // things to keep track of between callbacks
     complex dc_remove;
-    float agcGain;
+    gfloat agcGain;
     // jack parameters
-    unsigned int size;  // periodsize
-    unsigned int sample_rate;    // samplerate
+    guint size;  // periodsize
+    guint sample_rate;    // samplerate
+    
 } sdr_data_t;
 
 sdr_data_t *sdr_new();
