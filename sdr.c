@@ -23,8 +23,9 @@ sdr_data_t *sdr_new() {
     sdr->loVector = 1;  // start the local oscillator
     //sdr->loPhase = 1;   // this value is bogus but we're going to set the frequency anyway
     sdr->loPhase = cexp(I);
-    sdr->agcGain = 0;   // start off as quiet as possible
+    sdr->agc_gain = 0;   // start off as quiet as possible
     sdr->mode = SDR_LSB;
+    sdr->agc_speed = 0.005;
     
 }
 
@@ -42,8 +43,8 @@ int sdr_process(sdr_data_t *sdr) {
     fft_data_t *fft = sdr->fft;
     int size = sdr->size;
     
-    float agcGain = sdr->agcGain;
-    float agcPeak = 0;
+    float agc_gain = sdr->agc_gain;
+    float agc_peak = 0;
 
     // remove DC with a highpass filter
     for (i = 0; i < size; i++) {       // DC removal; R.G. Lyons page 553
@@ -68,22 +69,24 @@ int sdr_process(sdr_data_t *sdr) {
     // apply some AGC here
     for (i = 0; i < sdr->size; i++) {
         y = cabs(sdr->iqSample[i]);
-        if (agcPeak < y) agcPeak = y;
+        if (agc_peak < y) agc_peak = y;
+
     }
-    if (agcPeak == 0) agcPeak = 0.00001;    // don't be zero, in case we have digital silence
-    y = agcPeak * agcGain;  // y is the peak level scaled by the current gain
+
+    if (agc_peak == 0) agc_peak = 0.00001;    // don't be zero, in case we have digital silence
+    y = agc_peak * agc_gain;  // y is the peak level scaled by the current gain
 
     if (y <= 1) {       // Current level is below the soundcard max, increase gain
-        agcGain += (1/ agcPeak - agcGain) * 0.005;
+        agc_gain += (1/ agc_peak - agc_gain) * sdr->agc_speed;
     } else {                   // decrease gain
-        agcGain += (1 / agcPeak - agcGain);
+        agc_gain += (1 / agc_peak - agc_gain);
     }
-    y = agcGain * 0.5; // change volume
+    y = agc_gain * 0.5; // change volume
     for (i = 0; i < sdr->size; i++){
         sdr->iqSample[i] *= y;
     }
     
-    sdr->agcGain = agcGain;
+    sdr->agc_gain = agc_gain;
 
     switch(sdr->mode) {
         case SDR_LSB:

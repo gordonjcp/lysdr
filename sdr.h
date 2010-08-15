@@ -46,7 +46,8 @@ typedef struct {
 
     // things to keep track of between callbacks
     complex dc_remove;
-    gfloat agcGain;
+    gfloat agc_gain;
+    gfloat agc_speed;
     // jack parameters
     guint size;  // periodsize
     guint sample_rate;    // samplerate

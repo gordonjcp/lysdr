@@ -43,7 +43,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
   
     sdr_waterfall_update(widget, data);
 
-    y = (2000-sdr->agcGain)/2000;
+    y = (2000-sdr->agc_gain)/2000;
     if (y<0) y = 0;
     if (y>1) y = 1;
     y=y*y;
@@ -89,6 +89,19 @@ static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
     }
 }
 
+static void agc_clicked(GtkWidget *widget, gpointer psdr) {
+    sdr_data_t *sdr = (sdr_data_t *) psdr;
+    
+    gint state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+    if (state == 0) {
+        gtk_button_set_label(GTK_BUTTON(widget), "FAST");
+        sdr->agc_speed = 0.005;
+    } else {
+        gtk_button_set_label(GTK_BUTTON(widget), "SLOW");
+        sdr->agc_speed = 0.001;
+    }
+}
+
 void gui_display(sdr_data_t *sdr)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -100,6 +113,7 @@ void gui_display(sdr_data_t *sdr)
     GtkWidget *hpslider;
     GtkWidget *filter_button;
     GtkWidget *ssb_button;
+    GtkWidget *agc_button;
     
     float tune_max;
     
@@ -113,17 +127,18 @@ void gui_display(sdr_data_t *sdr)
     tune_max = (float)sdr->sample_rate;
     sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 10, 100, 0);
     
-    // filter sliders
-    hbox = gtk_hbox_new(FALSE,1);
-    //gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     
     sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
     sdr->hp_tune = gtk_adjustment_new(300, 25, 3400, 10, 100, 0); // pretty arbitrary limits
 
-
+    // buttons etc
+    hbox = gtk_hbox_new(FALSE,1);
     // S meter
     meter = sdr_smeter_new(NULL);
     gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
+
+    agc_button = gtk_toggle_button_new_with_label("FAST");
+    gtk_box_pack_start(GTK_BOX(hbox), agc_button, TRUE, TRUE, 0);
 
     // VFO readout
     label = gtk_label_new (NULL);
@@ -151,7 +166,6 @@ void gui_display(sdr_data_t *sdr)
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(filter_button), "clicked", G_CALLBACK(filter_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(ssb_button), "clicked", G_CALLBACK(ssb_clicked), sdr);
-    //gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(lowpass_changed), sdr);
-    //gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(highpass_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(agc_button), "clicked", G_CALLBACK(agc_clicked), sdr);
 }
 
