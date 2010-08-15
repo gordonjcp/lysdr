@@ -87,8 +87,8 @@ void filter_fir_process(SDRData *sdr) {
         
     for (i = 0; i < size; i++) {
         c = sdr->iqSample[i];
-        buf_I[index] = creal(c);
-    	buf_Q[index] = cimag(c);
+        buf_I[index] = creal(c)+(0.000001*(float)rand()/RAND_MAX-0.5);
+    	buf_Q[index] = cimag(c)+(0.000001*(float)rand()/RAND_MAX-0.5);
         accI = accQ = 0;
         j = index;
     	for (k = 0; k < taps; k++) {
