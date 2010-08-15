@@ -39,7 +39,7 @@ int sdr_process(SDRData *sdr) {
     }
 
     for (i=0; i<size; i++) {
-        fft->samples[i+(FFT_SIZE-size)] = sdr->iqSample[i];
+        fft->samples[i+(FFT_SIZE-size)] = sdr->iqSample[i]; // segfault happened here
     }
 
 
@@ -50,7 +50,7 @@ int sdr_process(SDRData *sdr) {
 	}
 
     
-    filter_fir_process(sdr);
+    filter_fir_process(sdr->filter, sdr->iqSample);
 
     // apply some AGC here
     for (i = 0; i < sdr->size; i++) {

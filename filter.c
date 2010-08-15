@@ -7,16 +7,6 @@
 #include "filter.h"
 #include "sdr.h"
 
-static complex *impulse;
-static complex *samples;
-static double *buf_I;
-static double *buf_Q;
-static double *imp_I;
-static double *imp_Q;
-static int index;
-static int size;
-static int taps;
-
 static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
     float K = bw * taps / sample_rate;
@@ -40,48 +30,59 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
     }
 }
 
-void *filter_fir_new(int taps_i, int size_i) {
-    size = size_i;
-    taps = taps_i;
-    impulse = malloc(sizeof(complex)*taps);
-    imp_I = malloc(sizeof(double)*taps);
-    imp_Q = malloc(sizeof(double)*taps);
-    buf_I = malloc(sizeof(double)*taps);
-    buf_Q = malloc(sizeof(double)*taps);
-
-
-    index = 0;
-
+filter_fir_t *filter_fir_new(int taps, int size) {
+    // create the structure for a new FIR filter
+    filter_fir_t *filter = malloc(sizeof(filter_fir_t));
+    filter->taps = taps;
+    filter->size = size;
+    filter->impulse = malloc(sizeof(complex)*taps);
+    filter->imp_I = malloc(sizeof(double)*taps);
+    filter->imp_Q = malloc(sizeof(double)*taps);
+    filter->buf_I = malloc(sizeof(double)*taps);
+    filter->buf_Q = malloc(sizeof(double)*taps);
+    filter->index = 0;
+    return filter;
 }
 
-void filter_fir_destroy() {
-
-        if (impulse) free(impulse);
-        if (imp_I) free(imp_I);
-        if (imp_Q) free(imp_Q);
-        if (buf_I) free(buf_I);
-        if (buf_Q) free(buf_Q);
+void filter_fir_destroy(filter_fir_t *filter) {
+    // destroy the FIR filter
+    if (filter) {
+        if (filter->impulse) free(filter->impulse);
+        if (filter->imp_I) free(filter->imp_I);
+        if (filter->imp_Q) free(filter->imp_Q);
+        if (filter->buf_I) free(filter->buf_I);
+        if (filter->buf_Q) free(filter->buf_Q);
+       free(filter);
+    }
 }
 
-void filter_fir_set_response(int sample_rate, float bw, float centre) {
+void filter_fir_set_response(filter_fir_t *filter, int sample_rate, float bw, float centre) {
     // plop an impulse into the appropriate array
     int i;
-    make_impulse(impulse, sample_rate, taps, bw, centre);
-    
-    for (i=0; i<taps; i++) {
-       imp_I[i] = creal(impulse[i]);
-       imp_Q[i] = cimag(impulse[i]);
+    make_impulse(filter->impulse, sample_rate, filter->taps, bw, centre);
+
+    for (i=0; i<filter->taps; i++) {
+       filter->imp_I[i] = creal(filter->impulse[i]);
+       filter->imp_Q[i] = cimag(filter->impulse[i]);
     } 
 }
 
-void filter_fir_process(SDRData *sdr) {
+void filter_fir_process(filter_fir_t *filter, complex *samples) {
+    // Perform an FIR filter on the data "in place"
+    // this routine is slow and has a horrible hack to avoid denormals
     int i, j, k;
     complex c;
     double accI, accQ;
-    complex out[size];
+    double *buf_I = filter->buf_I;
+    double *buf_Q = filter->buf_Q;
+    double *imp_I = filter->imp_I;
+    double *imp_Q = filter->imp_Q;
+    int index = filter->index;
+    int taps = filter->taps;
         
-    for (i = 0; i < size; i++) {
-        c = sdr->iqSample[i];
+    for (i = 0; i < filter->size; i++) {
+        c = samples[i];
+        // the random number is the horrible hack to avoid denormals
         buf_I[index] = creal(c)+(0.000000001*((float)rand()/RAND_MAX-0.5));
     	buf_Q[index] = cimag(c)+(0.000000001*((float)rand()/RAND_MAX-0.5));
         accI = accQ = 0;
@@ -91,12 +92,12 @@ void filter_fir_process(SDRData *sdr) {
             accQ += buf_Q[j] * imp_Q[k];
             if (++j >= taps) j = 0;
         }
-        out[i] = accI + I * accQ;
-        if (++index >= taps) index = 0;
+        samples[i] = accI + I * accQ;
+        index++;
+        if (index >= taps) index = 0;
     }
-    for(i=0; i<size; i++) {
-        sdr->iqSample[i] = out[i];
-    }
+    filter->index = index;
+
 }
 
 /* scratchpad below here */

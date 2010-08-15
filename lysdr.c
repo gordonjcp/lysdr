@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
     
     sdr->loVector = 1;
     sdr->agcGain = 0;
-    filter_fir_new(250, sdr->size);
-    filter_fir_set_response(sdr->sample_rate, 3100, 1850);
+    sdr->filter = filter_fir_new(750, sdr->size);
+    filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
        
     audio_connect(sdr);
 
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
        
     gtk_main();
     audio_stop(sdr);
-    filter_fir_destroy();
+    filter_fir_destroy(sdr->filter);
     fft_teardown(sdr);
     
     free(sdr);

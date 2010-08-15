@@ -8,6 +8,7 @@
 #include <complex.h>
 #include <gtk/gtk.h>
 #include <fftw3.h>
+#include "filter.h"
 
 #define FFT_SIZE 1024
 #define FIR_SIZE 1024
@@ -40,6 +41,8 @@ typedef struct {
 
     FFT_DATA *fft;
     int fft_size;
+    
+    filter_fir_t *filter;
 
     // things to keep track of between callbacks
     complex dc_remove;
