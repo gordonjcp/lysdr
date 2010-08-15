@@ -18,7 +18,7 @@ enum fft_status {EMPTY,			// fft_data is currently unused
 	FILLING,			// now writing samples to this fft
 	READY};				// ready to perform fft
 
-enum rx_mode { LSB, USB };
+enum rx_mode { SDR_LSB, SDR_USB };
 
 typedef struct {
 	fftw_complex *samples;		// complex data for fft

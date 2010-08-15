@@ -27,7 +27,7 @@ static void sdr_smeter_init(SDRSMeter *sm) {
 static void sdr_smeter_size_request(GtkWidget *widget, GtkRequisition *requisition) {
     // width doesn't seem to be obeyed.
     requisition->width = 265;
-    requisition->height = 40;
+    requisition->height = 20;
 }
 
 GtkWidget *sdr_smeter_new() {

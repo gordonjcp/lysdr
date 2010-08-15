@@ -21,7 +21,8 @@ sdr_data_t *sdr_new() {
     
     sdr = malloc(sizeof(sdr_data_t));
     sdr->loVector = 1;  // start the local oscillator
-    sdr->loPhase = 1;   // this value is bogus but we're going to set the frequency anyway
+    //sdr->loPhase = 1;   // this value is bogus but we're going to set the frequency anyway
+    sdr->loPhase = cexp(I);
     sdr->agcGain = 0;   // start off as quiet as possible
     
 }
@@ -72,7 +73,7 @@ int sdr_process(sdr_data_t *sdr) {
     y = agcPeak * agcGain;  // y is the peak level scaled by the current gain
 
     if (y <= 1) {       // Current level is below the soundcard max, increase gain
-        agcGain += (1/ agcPeak - agcGain) * 0.001;
+        agcGain += (1/ agcPeak - agcGain) * 0.005;
     } else {                   // decrease gain
         agcGain += (1 / agcPeak - agcGain);
     }
