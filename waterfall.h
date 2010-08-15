@@ -66,7 +66,7 @@ G_END_DECLS
 #define LOOSE 2
 #define WITHIN(x, p) (x-1 > p-LOOSE) && (x-1 < p + LOOSE)
 
-#define SCALE_HEIGHT 32
+#define SCALE_HEIGHT 24
 
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size);
 float sdr_waterfall_get_tuning(SDRWaterfall *wf);

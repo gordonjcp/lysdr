@@ -252,6 +252,8 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     int width = wf->width;
     int height = wf->wf_height;
+    
+   
 
     int cursor;
     
@@ -282,6 +284,11 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_move_to(cr, 0.5f+cursor, 0); // must be offset by a half-pixel for a single line
     cairo_line_to(cr, 0.5f+cursor, height);
     cairo_stroke(cr);
+    
+    // filter cursor
+    cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
+    cairo_rectangle(cr, cursor - wf->lp_tune->value / 48.875 , 0, (wf->lp_tune->value - wf->hp_tune->value) / 48.875, height);
+    cairo_fill(cr);
 
     cairo_destroy (cr);
 
