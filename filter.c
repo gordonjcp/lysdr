@@ -26,7 +26,7 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
 
     float tune = 2.0 * M_PI * centre / sample_rate;
     
-    for (k=-taps/2; k<=taps/2; k++) {
+    for (k=-taps/2; k<taps/2; k++) {
         if (k==0) z=(float)K/taps;
         else z=1.0/taps*sin(M_PI*k*K/taps)/sin(M_PI*k/taps);
         // apply a windowing function.  I can't hear any difference...
@@ -57,15 +57,10 @@ void *filter_fir_new(int taps_i, int size_i) {
 void filter_fir_destroy() {
 
         if (impulse) free(impulse);
-                printf("2\n");
         if (imp_I) free(imp_I);
-                printf("3\n");
         if (imp_Q) free(imp_Q);
-                printf("4\n");
         if (buf_I) free(buf_I);
-                printf("5\n");
         if (buf_Q) free(buf_Q);
-                printf("6\n");
 }
 
 void filter_fir_set_response(int sample_rate, float bw, float centre) {

@@ -43,9 +43,10 @@ int main(int argc, char *argv[]) {
     gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 1015);
        
     gtk_main();
-    //filter_fir_destroy();
-    fft_teardown(sdr);
     audio_stop(sdr);
+    filter_fir_destroy();
+    fft_teardown(sdr);
+    
     free(sdr);
-        gdk_threads_leave();
+    gdk_threads_leave();
 }
