@@ -11,13 +11,17 @@ You will need to connect some sort of IQ source to the inputs - this can
 be either a real live soundcard with some SDR hardware, or a prerecorded
 IQ file.
 
-Drag the slider to tune the radio.  The number above the slider is the
+Drag the slider to tune the radio.  The number below the slider is the
 frequency offset in Hz from the SDR centre (local oscillator) frequency.
 Right-drag for bandspread tuning (1Hz steps).
 
-At present lysdr only demodulates LSB, but can be adapted for USB.
+There are toggle buttons to select fast and slow AGC, wide and narrow filtering
+and USB/LSB demodulation.  There's also a not-very-good S meter.
+
 
 KNOWN BUGS:
-Crashes when resizing
-after resizing, the scale no longer accurately tracks the tuning
+the horrible hack to cure the filter denormals introduces a bit of noise.  This
+noise is normally inaudibly quiet compared to real signals, but with the input
+disconnected the AGC ramps up until it is audible
+
 report any more to gordon@gjcp.net
