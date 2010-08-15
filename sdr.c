@@ -51,6 +51,7 @@ int sdr_process(sdr_data_t *sdr) {
     }
 
     // copy this period to FFT buffer
+    // FIXME - needs to deal with cases where size isn't a multiple of FFT_SIZE
     memmove(fft->samples, fft->samples+size, sizeof(complex)*(FFT_SIZE-size));
     memmove(fft->samples+FFT_SIZE-size, sdr->iqSample, sizeof(complex)*size);
 
@@ -71,7 +72,7 @@ int sdr_process(sdr_data_t *sdr) {
     y = agcPeak * agcGain;  // y is the peak level scaled by the current gain
 
     if (y <= 1) {       // Current level is below the soundcard max, increase gain
-        agcGain += (1/ agcPeak - agcGain) * 0.005;
+        agcGain += (1/ agcPeak - agcGain) * 0.001;
     } else {                   // decrease gain
         agcGain += (1 / agcPeak - agcGain);
     }

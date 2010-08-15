@@ -6,13 +6,14 @@
 
 #include "sdr.h"
 #include "waterfall.h"
+#include "smeter.h"
 
 extern sdr_data_t *sdr;
 
 // these are global so that the gui_update routine can fiddle with them
 GtkWidget *label;
 GtkWidget *wfdisplay;
-GtkWidget *progress;
+GtkWidget *meter;
 
 static gboolean gui_update_waterfall(GtkWidget *widget) {
 
@@ -45,8 +46,9 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
     y = (2000-sdr->agcGain)/2000;
     if (y<0) y = 0;
     if (y>1) y = 1;
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress), y);
-
+    y=y*y;
+    //gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress), y);
+    sdr_smeter_set_level(SDR_SMETER(meter), y);
   return TRUE;
 }
 
@@ -118,28 +120,30 @@ void gui_display(sdr_data_t *sdr)
     
     // filter sliders
     hbox = gtk_hbox_new(FALSE,1);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+    //gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     
     sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
     sdr->hp_tune = gtk_adjustment_new(300, 25, 3400, 10, 100, 0); // pretty arbitrary limits
-    lpslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->lp_tune));
-    hpslider = gtk_hscale_new(GTK_ADJUSTMENT(sdr->hp_tune));
-    
-    //gtk_box_pack_start(GTK_BOX(hbox), hpslider, TRUE, TRUE, 0);
-    //gtk_box_pack_start(GTK_BOX(hbox), lpslider, TRUE, TRUE, 0);
+
+
+    // S meter
+    meter = sdr_smeter_new(NULL);
+    gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
 
     // VFO readout
     label = gtk_label_new (NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
     gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 
+
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     // AGC
-    progress = gtk_progress_bar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
+    //progress = gtk_progress_bar_new();
+    //gtk_box_pack_start(GTK_BOX(vbox), progress, TRUE, TRUE, 0);
     
     gtk_widget_show_all(mainWindow);
     
