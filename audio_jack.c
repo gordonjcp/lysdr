@@ -84,7 +84,7 @@ int audio_stop(sdr_data_t *sdr) {
     // we may also want to clean up any audio buffers
     jack_client_close (client);
     if (sdr->iqSample) g_free(sdr->iqSample);
-    //if (sdr->output) g_free(sdr->output);
+    if (sdr->output) g_free(sdr->output);
 
 }
 

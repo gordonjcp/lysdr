@@ -14,6 +14,22 @@
 static gint blk_pos=0;
 static int n;
 
+sdr_data_t *sdr_new() {
+    // create an SDR, and initialise it
+    sdr_data_t *sdr;
+    
+    sdr = malloc(sizeof(sdr_data_t));
+    sdr->loVector = 1;
+    sdr->agcGain = 0;
+    
+}
+
+void sdr_destroy(sdr_data_t *sdr) {
+    if (sdr) {
+        free(sdr);
+    }
+}
+
 int sdr_process(sdr_data_t *sdr) {
     // actually do the SDR bit
     int i, j, k;

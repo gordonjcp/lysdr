@@ -52,5 +52,6 @@ typedef struct {
     unsigned int sample_rate;    // samplerate
 } sdr_data_t;
 
+sdr_data_t *sdr_new();
 int sdr_process(sdr_data_t *sdr);
 #endif
