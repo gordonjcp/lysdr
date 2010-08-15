@@ -7,6 +7,7 @@
 #include <math.h>
 #include <complex.h>
 #include <fftw3.h>
+#include <strings.h>
 
 #include "filter.h"
 #include "sdr.h"

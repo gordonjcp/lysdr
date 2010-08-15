@@ -58,7 +58,6 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
-    sdr->loVector = 1;
     sprintf(l, "<tt>%f</tt>",7.056+(tune/1000000));
     gtk_label_set_markup(GTK_LABEL(label), l);
 }
