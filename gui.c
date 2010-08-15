@@ -60,7 +60,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
-    sprintf(l, "<tt>%f</tt>",7.056+(tune/1000000));
+    sprintf(l, "<tt>%4.5f</tt>",7.056+(tune/1000000));
     gtk_label_set_markup(GTK_LABEL(label), l);
 }
 
@@ -125,7 +125,7 @@ void gui_display(sdr_data_t *sdr)
 
     // tuning scale
     tune_max = (float)sdr->sample_rate;
-    sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 10, 100, 0);
+    sdr->tuning = gtk_adjustment_new(-1, -tune_max/2, tune_max/2, 10, 100, 0);
     
     
     sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
@@ -159,7 +159,7 @@ void gui_display(sdr_data_t *sdr)
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     
     gtk_widget_show_all(mainWindow);
-    
+
     // connect handlers
     // FIXME - determine minimum update rate from jack latency
     g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);

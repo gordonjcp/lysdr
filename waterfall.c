@@ -51,6 +51,8 @@ static void sdr_waterfall_init (SDRWaterfall *wf) {
 static void sdr_waterfall_realize(GtkWidget *widget) {
     // here we handle things that must happen once the widget has a size
     SDRWaterfall *wf;
+    cairo_t *cr;
+    gint i, j, step, width;
     
     g_return_if_fail(SDR_IS_WATERFALL(widget));
 
@@ -62,22 +64,47 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     
     
     // save width and height to clamp rendering size
-    wf->width = widget->allocation.width;
+    width = widget->allocation.width;
+    wf->width = width;
     wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
     
-    priv->cursor_pos = wf->width * (0.5+(wf->tuning->value/wf->sample_rate)); 
-    //if (!wf->pixels) wf->pixels=g_new0(guchar, wf->fft_size*4*wf->height);
-
-
-/*
-22:02 < tadeboro> gordonjcp: Oh, I just remembered one more thing.
-22:03 < tadeboro> maybe you should replace your pixmap with cairo surface now in order to avoid re-writing your 
-                  app next time Company decides to remove another part of GDK.
-22:07 < tadeboro> gordonjcp: Surfaces with Xlib backend will hang-around server-side. Simply replacing your 
-                  ring-buffer pixmap with ring-buffer Xlib cairo surface will do the trick.
-*/
-
-    wf->pixmap = gdk_pixmap_new(widget->window, wf->width, wf->wf_height, -1);
+    priv->cursor_pos = width * (0.5+(wf->tuning->value/wf->sample_rate)); 
+    wf->pixmap = gdk_pixmap_new(widget->window, width, wf->wf_height, -1);
+    
+    // clear the waterfall pixmap to black
+    cr = gdk_cairo_create (wf->pixmap);
+    cairo_rectangle(cr, 0, 0, width, wf->wf_height);
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_paint(cr);
+    cairo_destroy(cr);
+    
+    // draw the scale to a handy pixmap
+    wf->scale = gdk_pixmap_new(widget->window, width, SCALE_HEIGHT, -1);
+    cr = gdk_cairo_create(wf->scale);
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_paint(cr);
+    cairo_set_source_rgb(cr, 1, 0, 0);
+    cairo_move_to(cr, 0, 0);
+    cairo_line_to(cr, width, 0);
+    cairo_stroke(cr);
+    cairo_set_line_width(cr, 1);
+    
+    // zero is width/2
+    // ends are sample_rate/2
+    char s[10];
+    
+    for (i=-25000; i<25000; i+=5000) {  // FIXME hardcoded
+        j = width * (0.5+((double)i/wf->sample_rate));
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_move_to(cr, 0.5+j, 0);
+        cairo_line_to(cr, 0.5+j, 8);
+        cairo_stroke(cr);
+        cairo_move_to(cr, j-10, 18);
+        cairo_set_source_rgb(cr, .75, .75, .75);
+        sprintf(s, "%4.3f", 7.056+(i/1000000.0f));
+        cairo_show_text(cr,s);
+    }
+    cairo_destroy(cr);    
 
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
@@ -229,6 +256,9 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     int cursor;
     
     cairo_t *cr = gdk_cairo_create (widget->window);
+    
+    gdk_cairo_set_source_pixmap(cr, wf->scale, 0, height);
+    cairo_paint(cr);
     
     // clip region is waterfall size
     cairo_rectangle(cr, 0, 0, width, height);

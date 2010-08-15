@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
 
     gui_display(sdr);
     
-    gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 1015);
-       
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
+
     gtk_main();
     audio_stop(sdr);
     filter_fir_destroy(sdr->filter);
