@@ -7,12 +7,12 @@
 #include "sdr.h"
 #include "waterfall.h"
 
-extern guchar data[FFT_SIZE*4];
 extern sdr_data_t *sdr;
 
-    GtkWidget *label;
-    GtkWidget *wfdisplay;
-    GtkWidget *progress;
+// these are global so that the gui_update routine can fiddle with them
+GtkWidget *label;
+GtkWidget *wfdisplay;
+GtkWidget *progress;
 
 static gboolean gui_update_waterfall(GtkWidget *widget) {
 
@@ -20,7 +20,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
     gdouble y;
     fftw_complex z;
     guchar data[FFT_SIZE*4];
-    FFT_DATA *fft= sdr->fft;
+    fft_data_t *fft= sdr->fft;
 
     fftw_execute(fft->plan);
     fft->status=EMPTY;
@@ -54,7 +54,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr;
     char l[20];
-    sdr = (sdr_data_t *) psdr;    // void* cast back to sdr_data_t*
+    sdr = (sdr_data_t *) psdr;
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);

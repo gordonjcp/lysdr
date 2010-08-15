@@ -19,7 +19,7 @@ int sdr_process(sdr_data_t *sdr) {
     int i, j, k;
     double y, accI, accQ;
     complex c;
-    FFT_DATA *fft = sdr->fft;
+    fft_data_t *fft = sdr->fft;
     int size = sdr->size;
     
     float agcGain = sdr->agcGain;
@@ -80,9 +80,9 @@ int sdr_process(sdr_data_t *sdr) {
 }
 
 void fft_setup(sdr_data_t *sdr) {
-    sdr->fft = (FFT_DATA *)malloc(sizeof(FFT_DATA));
+    sdr->fft = (fft_data_t *)malloc(sizeof(fft_data_t));
     sdr->fft_size = FFT_SIZE;
-    FFT_DATA *fft = sdr->fft;
+    fft_data_t *fft = sdr->fft;
     
     fft->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
     fft->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
@@ -92,7 +92,7 @@ void fft_setup(sdr_data_t *sdr) {
 }
 
 void fft_teardown(sdr_data_t *sdr) {
-    FFT_DATA *fft = sdr->fft;
+    fft_data_t *fft = sdr->fft;
     fftw_destroy_plan(fft->plan);
     fftw_free(fft->samples);
     fftw_free(fft->out);

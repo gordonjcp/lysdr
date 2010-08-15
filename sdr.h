@@ -26,7 +26,7 @@ typedef struct {
 	fftw_plan plan;			// fft plan for fftW
 	int index;			// position of next fft sample
 	enum fft_status status;		// whether the fft is busy
-} FFT_DATA;
+} fft_data_t;
 
 typedef struct {
     complex *iqSample;  // the array of incoming samples
@@ -39,7 +39,7 @@ typedef struct {
     GtkObject *hp_tune; // adjustment for filter highpass
     gint mode;          // demodulator mode
 
-    FFT_DATA *fft;
+    fft_data_t *fft;
     int fft_size;
     
     filter_fir_t *filter;
