@@ -22,8 +22,8 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
     jack_default_audio_sample_t *ii, *qq, *L, *R;
     int i, n;
     
-    SDRData *sdr;
-    sdr = (SDRData *) psdr;    // void* cast back to SDRData*
+    sdr_data_t *sdr;
+    sdr = (sdr_data_t *) psdr;    // void* cast back to sdr_data_t*
     
     // get all four buffers
 	ii = jack_port_get_buffer (I_in, nframes);
@@ -53,7 +53,7 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
     return 0;
 }
 
-int audio_start(SDRData *sdr) {
+int audio_start(sdr_data_t *sdr) {
     // open a client connection to the JACK server
 	client = jack_client_open (client_name, JackNullOption, &status, NULL);
 	if (client == NULL) {
@@ -79,7 +79,7 @@ int audio_start(SDRData *sdr) {
 	sdr->output = g_new0(double, sdr->size);
 }
 
-int audio_stop(SDRData *sdr) {
+int audio_stop(sdr_data_t *sdr) {
     // remove the connection to the jack server
     // we may also want to clean up any audio buffers
     jack_client_close (client);
@@ -88,7 +88,7 @@ int audio_stop(SDRData *sdr) {
 
 }
 
-int audio_connect(SDRData *sdr) {
+int audio_connect(sdr_data_t *sdr) {
     
     const char **ports;
     // start processing audio

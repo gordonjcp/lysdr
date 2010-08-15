@@ -50,7 +50,7 @@ typedef struct {
     // jack parameters
     unsigned int size;  // periodsize
     unsigned int sample_rate;    // samplerate
-} SDRData;
+} sdr_data_t;
 
-int sdr_process(SDRData *sdr);
+int sdr_process(sdr_data_t *sdr);
 #endif

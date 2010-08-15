@@ -14,7 +14,7 @@
 static gint blk_pos=0;
 static int n;
 
-int sdr_process(SDRData *sdr) {
+int sdr_process(sdr_data_t *sdr) {
     // actually do the SDR bit
     int i, j, k;
     double y, accI, accQ;
@@ -79,7 +79,7 @@ int sdr_process(SDRData *sdr) {
     }
 }
 
-void fft_setup(SDRData *sdr) {
+void fft_setup(sdr_data_t *sdr) {
     sdr->fft = (FFT_DATA *)malloc(sizeof(FFT_DATA));
     sdr->fft_size = FFT_SIZE;
     FFT_DATA *fft = sdr->fft;
@@ -91,7 +91,7 @@ void fft_setup(SDRData *sdr) {
 	fft->index = 0;
 }
 
-void fft_teardown(SDRData *sdr) {
+void fft_teardown(sdr_data_t *sdr) {
     FFT_DATA *fft = sdr->fft;
     fftw_destroy_plan(fft->plan);
     fftw_free(fft->samples);
