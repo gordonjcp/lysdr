@@ -24,6 +24,7 @@ sdr_data_t *sdr_new() {
     //sdr->loPhase = 1;   // this value is bogus but we're going to set the frequency anyway
     sdr->loPhase = cexp(I);
     sdr->agcGain = 0;   // start off as quiet as possible
+    sdr->mode = SDR_LSB;
     
 }
 
@@ -84,11 +85,20 @@ int sdr_process(sdr_data_t *sdr) {
     
     sdr->agcGain = agcGain;
 
-    // this demodulates LSB
-    for (i=0; i < sdr->size; i++) {
-	    y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-        sdr->output[i] = y;
-    }
+    switch(sdr->mode) {
+        case SDR_LSB:
+            for (i=0; i < sdr->size; i++) {
+	            y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
+                sdr->output[i] = y;
+            }
+            break;
+        case SDR_USB:
+            for (i=0; i < sdr->size; i++) {
+	            y = creal(sdr->iqSample[i])-cimag(sdr->iqSample[i]);
+                sdr->output[i] = y;
+            }
+            break;
+    }  
 }
 
 void fft_setup(sdr_data_t *sdr) {
