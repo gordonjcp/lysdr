@@ -289,6 +289,17 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
     cairo_rectangle(cr, cursor - wf->lp_tune->value / 48.875 , 0, (wf->lp_tune->value - wf->hp_tune->value) / 48.875, height);
     cairo_fill(cr);
+    
+    // side rails
+    cairo_set_line_width(cr, 1);
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
+    cairo_move_to(cr, 0.5 + (int)(cursor - wf->lp_tune->value / 48.875), 0);
+    cairo_line_to(cr, 0.5 + (int)(cursor - wf->lp_tune->value / 48.875), height);
+    cairo_stroke(cr);
+    cairo_move_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), 0);
+    cairo_line_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), height);
+    cairo_stroke(cr);
+    
 
     cairo_destroy (cr);
 
