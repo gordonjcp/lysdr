@@ -135,6 +135,7 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
     // need to update the filter positions too
     priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
+    priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -313,9 +314,9 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_stroke(cr);
     
     // filter cursor
-    // (width*(value/wf->sample_rate)
     cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
-    cairo_rectangle(cr, priv->lp_pos, 0, (wf->lp_tune->value - wf->hp_tune->value) / 48.875, height);
+    cairo_rectangle(cr, priv->lp_pos, 0, abs(priv->lp_pos - priv->hp_pos), height);
+
     cairo_fill(cr);
     
     // side rails
@@ -334,8 +335,8 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     // highpass
     cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
-    cairo_move_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), 0);
-    cairo_line_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), height);
+    cairo_move_to(cr, 0.5 + priv->hp_pos, 0);
+    cairo_line_to(cr, 0.5 + priv->hp_pos, height);
     cairo_stroke(cr);
     
 

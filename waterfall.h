@@ -47,6 +47,7 @@ struct _SDRWaterfallClass {
 struct _SDRWaterfallPrivate {
     gint cursor_pos;    // pixel position for tuning cursor
     gint lp_pos;        // pixel position for lowpass cursor
+    gint hp_pos;        // pixel position for highpass cursor
     gint scroll_pos;    // which line the scroller is on
     gint prelight;
     gint drag;
