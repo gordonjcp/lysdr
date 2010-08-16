@@ -71,12 +71,12 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
         gtk_button_set_label(GTK_BUTTON(widget), "WIDE");
         filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
         gtk_adjustment_set_value(sdr->lp_tune, 3400);
-                gtk_adjustment_set_value(sdr->hp_tune, 300);
+        gtk_adjustment_set_value(sdr->hp_tune, 300);
     } else {
         gtk_button_set_label(GTK_BUTTON(widget), "NARROW");
         filter_fir_set_response(sdr->filter, sdr->sample_rate, 1500, 1650);
         gtk_adjustment_set_value(sdr->lp_tune, 2400);
-                gtk_adjustment_set_value(sdr->hp_tune, 900);
+        gtk_adjustment_set_value(sdr->hp_tune, 900);
     }
 }
 

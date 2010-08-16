@@ -129,8 +129,17 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     SDRWaterfall *wf = SDR_WATERFALL(p);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     int width = wf->width;
-    gdouble value = gtk_adjustment_get_value(wf->tuning);
+    gdouble value = gtk_adjustment_get_value(wf->tuning);   // FIXME - get from *widget?
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
+    gtk_widget_queue_draw(GTK_WIDGET(wf));
+}
+
+static void sdr_waterfall_lowpass_changed(GtkWidget *widget, gpointer *p) {
+    SDRWaterfall *wf = SDR_WATERFALL(p);
+    SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
+    int width = wf->width;
+    gdouble value = gtk_adjustment_get_value(wf->lp_tune);
+    priv->lp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -156,7 +165,8 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
     // signals for when the adjustments change
     g_signal_connect (tuning, "value-changed",
         G_CALLBACK (sdr_waterfall_tuning_changed), wf);
-    
+    g_signal_connect (lp_tune, "value-changed",
+        G_CALLBACK (sdr_waterfall_lowpass_changed), wf);
     return GTK_WIDGET(wf);
     
 }
@@ -288,15 +298,16 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_stroke(cr);
     
     // filter cursor
+    // (width*(value/wf->sample_rate)
     cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
-    cairo_rectangle(cr, cursor - wf->lp_tune->value / 48.875 , 0, (wf->lp_tune->value - wf->hp_tune->value) / 48.875, height);
+    cairo_rectangle(cr, priv->lp_pos, 0, (wf->lp_tune->value - wf->hp_tune->value) / 48.875, height);
     cairo_fill(cr);
     
     // side rails
     cairo_set_line_width(cr, 1);
     cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
-    cairo_move_to(cr, 0.5 + (int)(cursor - wf->lp_tune->value / 48.875), 0);
-    cairo_line_to(cr, 0.5 + (int)(cursor - wf->lp_tune->value / 48.875), height);
+    cairo_move_to(cr, 0.5 + priv->lp_pos, 0);
+    cairo_line_to(cr, 0.5 + priv->lp_pos, height);
     cairo_stroke(cr);
     cairo_move_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), 0);
     cairo_line_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), height);
