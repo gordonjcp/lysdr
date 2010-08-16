@@ -52,7 +52,8 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     // here we handle things that must happen once the widget has a size
     SDRWaterfall *wf;
     cairo_t *cr;
-    gint i, j, step, width;
+    gint i, j, scale, width;
+    char s[10];
     
     g_return_if_fail(SDR_IS_WATERFALL(widget));
 
@@ -91,9 +92,10 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     
     // zero is width/2
     // ends are sample_rate/2
-    char s[10];
+
+    scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
     
-    for (i=-25000; i<25000; i+=5000) {  // FIXME hardcoded
+    for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
         j = width * (0.5+((double)i/wf->sample_rate));
         cairo_set_source_rgb(cr, 1, 0, 0);
         cairo_move_to(cr, 0.5+j, 0);
