@@ -110,6 +110,9 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
 
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
+    gtk_adjustment_value_changed(wf->tuning);
+    gtk_adjustment_value_changed(wf->lp_tune);
+    gtk_adjustment_value_changed(wf->hp_tune);
 
 }
 
@@ -117,7 +120,6 @@ static void sdr_waterfall_unrealize(GtkWidget *widget) {
     // ensure that the pixel buffer is freed
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
-    //g_free(wf->pixels);
     g_object_unref(wf->pixmap);
 
     GTK_WIDGET_CLASS(parent_class)->unrealize(widget);
@@ -131,6 +133,8 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->tuning);   // FIXME - get from *widget?
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
+    // need to update the filter positions too
+    priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
