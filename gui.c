@@ -185,6 +185,7 @@ void gui_display(sdr_data_t *sdr)
     g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(filter_button), "clicked", G_CALLBACK(filter_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(ssb_button), "clicked", G_CALLBACK(ssb_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(agc_button), "clicked", G_CALLBACK(agc_clicked), sdr);
