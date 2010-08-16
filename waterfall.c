@@ -22,6 +22,8 @@ static gboolean sdr_waterfall_button_press(GtkWidget *widget, GdkEventButton *ev
 static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *event);
 static void sdr_waterfall_realize(GtkWidget *widget);
 static void sdr_waterfall_unrealize(GtkWidget *widget);
+void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value);
+void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
 
 static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
@@ -79,6 +81,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     cairo_paint(cr);
     cairo_destroy(cr);
     
+    // break this out to a separate function
     // draw the scale to a handy pixmap
     wf->scale = gdk_pixmap_new(widget->window, width, SCALE_HEIGHT, -1);
     cr = gdk_cairo_create(wf->scale);
@@ -90,9 +93,6 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     cairo_stroke(cr);
     cairo_set_line_width(cr, 1);
     
-    // zero is width/2
-    // ends are sample_rate/2
-
     scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
     
     for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
@@ -111,9 +111,9 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
     gtk_adjustment_value_changed(wf->tuning);
-    gtk_adjustment_value_changed(wf->lp_tune);
-    gtk_adjustment_value_changed(wf->hp_tune);
-
+    // probably don't need to poke the values below (in fact, it may not be helpful to do so
+    // gtk_adjustment_value_changed(wf->lp_tune);
+    // gtk_adjustment_value_changed(wf->hp_tune);
 }
 
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
@@ -148,6 +148,15 @@ static void sdr_waterfall_lowpass_changed(GtkWidget *widget, gpointer *p) {
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
+static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
+    SDRWaterfall *wf = SDR_WATERFALL(p);
+    SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
+    int width = wf->width;
+    gdouble value = gtk_adjustment_get_value(wf->hp_tune);
+    priv->hp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
+    gtk_widget_queue_draw(GTK_WIDGET(wf));
+}
+
 
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size) {
     // call this with three Adjustments, for tuning, lowpass filter and highpass filter
@@ -172,6 +181,8 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
         G_CALLBACK (sdr_waterfall_tuning_changed), wf);
     g_signal_connect (lp_tune, "value-changed",
         G_CALLBACK (sdr_waterfall_lowpass_changed), wf);
+    g_signal_connect (hp_tune, "value-changed",
+        G_CALLBACK (sdr_waterfall_highpass_changed), wf);
     return GTK_WIDGET(wf);
     
 }
@@ -197,6 +208,10 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
             prelight = P_LOWPASS;
             dirty = TRUE;
         }
+        if (WITHIN(x, priv->hp_pos)) {
+            prelight = P_HIGHPASS;
+            dirty = TRUE;
+        }
     }
     if (priv->drag == P_TUNING) {
         // drag cursor to tune
@@ -220,6 +235,14 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
         value = ((float)offset/width)*wf->sample_rate;
         sdr_waterfall_set_lowpass(wf, (float)value);
         prelight = P_LOWPASS;
+    }
+    
+        
+    if (priv->drag == P_HIGHPASS) {
+        offset = priv->cursor_pos - x;
+        value = ((float)offset/width)*wf->sample_rate;
+        sdr_waterfall_set_highpass(wf, (float)value);
+        prelight = P_HIGHPASS;
     }
     
     // redraw if the prelight has changed
@@ -321,22 +344,26 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     // side rails
     // lowpass
+    cairo_set_line_width(cr, 1);
     if (priv->prelight == P_LOWPASS) {
         cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
     } else  {
         cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
   
     }
-    cairo_set_line_width(cr, 1);
-   
+    
     cairo_move_to(cr, 0.5 + priv->lp_pos, 0);
     cairo_line_to(cr, 0.5 + priv->lp_pos, height);
     cairo_stroke(cr);
     
     // highpass
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
-    cairo_move_to(cr, 0.5 + priv->hp_pos, 0);
-    cairo_line_to(cr, 0.5 + priv->hp_pos, height);
+    if (priv->prelight == P_HIGHPASS) {
+        cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
+    } else  {
+        cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);  
+    }
+    cairo_move_to(cr, 0.5 + priv->hp_pos-1, 0);
+    cairo_line_to(cr, 0.5 + priv->hp_pos-1, height);
     cairo_stroke(cr);
     
 
@@ -391,6 +418,9 @@ void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
 
 void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->lp_tune, value);
+}
+void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value) {
+    gtk_adjustment_set_value(wf->hp_tune, value);
 }
 
 
