@@ -22,6 +22,7 @@ static gboolean sdr_waterfall_button_press(GtkWidget *widget, GdkEventButton *ev
 static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *event);
 static void sdr_waterfall_realize(GtkWidget *widget);
 static void sdr_waterfall_unrealize(GtkWidget *widget);
+static void sdr_waterfall_draw_scale(GtkWidget *widget);
 void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value);
 void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
 
@@ -48,6 +49,7 @@ static void sdr_waterfall_init (SDRWaterfall *wf) {
     priv->prelight = P_NONE;
     priv->drag = P_NONE;
     priv->scroll_pos = 0;
+    wf->centre_freq = 0;
 }
 
 static void sdr_waterfall_realize(GtkWidget *widget) {
@@ -65,7 +67,6 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     // chain up so we even *have* the size;
     GTK_WIDGET_CLASS(parent_class)->realize(widget);
     
-    
     // save width and height to clamp rendering size
     width = widget->allocation.width;
     wf->width = width;
@@ -75,55 +76,31 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     wf->pixmap = gdk_pixmap_new(widget->window, width, wf->wf_height, -1);
     
     // clear the waterfall pixmap to black
+    // not sure if there's a better way to do this
     cr = gdk_cairo_create (wf->pixmap);
     cairo_rectangle(cr, 0, 0, width, wf->wf_height);
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_paint(cr);
     cairo_destroy(cr);
     
-    // break this out to a separate function
-    // draw the scale to a handy pixmap
-    wf->scale = gdk_pixmap_new(widget->window, width, SCALE_HEIGHT, -1);
-    cr = gdk_cairo_create(wf->scale);
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    cairo_paint(cr);
-    cairo_set_source_rgb(cr, 1, 0, 0);
-    cairo_move_to(cr, 0, 0);
-    cairo_line_to(cr, width, 0);
-    cairo_stroke(cr);
-    cairo_set_line_width(cr, 1);
+    sdr_waterfall_draw_scale(widget);
     
-    scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
-    
-    for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
-        j = width * (0.5+((double)i/wf->sample_rate));
-        cairo_set_source_rgb(cr, 1, 0, 0);
-        cairo_move_to(cr, 0.5+j, 0);
-        cairo_line_to(cr, 0.5+j, 8);
-        cairo_stroke(cr);
-        cairo_move_to(cr, j-10, 18);
-        cairo_set_source_rgb(cr, .75, .75, .75);
-        sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
-        cairo_show_text(cr,s);
-    }
-    cairo_destroy(cr);    
-
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
     gtk_adjustment_value_changed(wf->tuning);
-    // probably don't need to poke the values below (in fact, it may not be helpful to do so
-    // gtk_adjustment_value_changed(wf->lp_tune);
-    // gtk_adjustment_value_changed(wf->hp_tune);
 }
 
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
     // ensure that the pixel buffer is freed
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
-    g_object_unref(wf->pixmap);
+    
+    g_object_unref(wf->pixmap); // we should definitely have a pixmap
+    if (wf->scale) // we might not have a scale
+        g_object_unref(wf->scale);
 
-    GTK_WIDGET_CLASS(parent_class)->unrealize(widget);
     g_mutex_free(priv->mutex);
+    GTK_WIDGET_CLASS(parent_class)->unrealize(widget);
 }
 
 static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
@@ -157,7 +134,6 @@ static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
-
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size) {
     // call this with three Adjustments, for tuning, lowpass filter and highpass filter
     // the tuning Adjustment should have its upper and lower bounds set to half the sample rate
@@ -185,6 +161,46 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
         G_CALLBACK (sdr_waterfall_highpass_changed), wf);
     return GTK_WIDGET(wf);
     
+}
+
+static void sdr_waterfall_draw_scale(GtkWidget *widget) {
+    // draw the scale to a handy pixmap
+    SDRWaterfall *wf = SDR_WATERFALL(widget);
+    gint width = wf->width;
+    //GdkPixmap *pix;
+    cairo_t *cr;
+    gint i, j, scale;
+    gchar s[10];
+    
+    if (!wf->scale) wf->scale = gdk_pixmap_new(widget->window, width, SCALE_HEIGHT, -1);
+    
+    cr = gdk_cairo_create(wf->scale);
+    cairo_rectangle(cr, 0, 0, width, SCALE_HEIGHT);
+    cairo_clip(cr);
+    
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_paint(cr);
+    cairo_set_source_rgb(cr, 1, 0, 0);
+    cairo_move_to(cr, 0, 0);
+    cairo_line_to(cr, width, 0);
+    cairo_stroke(cr);
+    cairo_set_line_width(cr, 1);
+    
+    scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
+    
+    for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
+        j = width * (0.5+((double)i/wf->sample_rate));
+        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_move_to(cr, 0.5+j, 0);
+        cairo_line_to(cr, 0.5+j, 8);
+        cairo_stroke(cr);
+        cairo_move_to(cr, j-10, 18);
+        cairo_set_source_rgb(cr, .75, .75, .75);
+        sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
+        cairo_show_text(cr,s);
+    }
+    cairo_destroy(cr);
+ 
 }
 
 static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *event) {
@@ -303,15 +319,14 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     int width = wf->width;
     int height = wf->wf_height;
-    
-   
-
     int cursor;
     
     cairo_t *cr = gdk_cairo_create (widget->window);
     
-    gdk_cairo_set_source_pixmap(cr, wf->scale, 0, height);
-    cairo_paint(cr);
+    if (wf->scale) {    // might not have a scale
+        gdk_cairo_set_source_pixmap(cr, wf->scale, 0, height);
+        cairo_paint(cr);
+    }
     
     // clip region is waterfall size
     cairo_rectangle(cr, 0, 0, width, height);
@@ -365,7 +380,6 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_move_to(cr, 0.5 + priv->hp_pos-1, 0);
     cairo_line_to(cr, 0.5 + priv->hp_pos-1, height);
     cairo_stroke(cr);
-    
 
     cairo_destroy (cr);
 
@@ -412,6 +426,10 @@ float sdr_waterfall_get_highpass(SDRWaterfall *wf) {
     return wf->hp_tune->value;
 }
 
+void sdr_waterfall_set_centre(SDRWaterfall *wf, gdouble value) {
+    wf->centre_freq = value;
+    sdr_waterfall_draw_scale(GTK_WIDGET(wf));
+}
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->tuning, value);
 }
