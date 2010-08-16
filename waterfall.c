@@ -103,7 +103,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
         cairo_stroke(cr);
         cairo_move_to(cr, j-10, 18);
         cairo_set_source_rgb(cr, .75, .75, .75);
-        sprintf(s, "%4.3f", 7.056+(i/1000000.0f));
+        sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
         cairo_show_text(cr,s);
     }
     cairo_destroy(cr);    

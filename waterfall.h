@@ -36,6 +36,7 @@ struct _SDRWaterfall {
     gint wf_height;
     
     gint sample_rate;
+    gint centre_freq;
     gint fft_size;
 };
 

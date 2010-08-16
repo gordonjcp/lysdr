@@ -156,6 +156,14 @@ void gui_display(sdr_data_t *sdr)
 
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
+    // common softrock frequencies
+    // 160m =  1844250
+    // 80m  =  3528000
+    // 40m  =  7056000
+    // 30m  = 10125000
+    // 20m  = 14075000
+    // 15m  = 21045000
+    SDR_WATERFALL(wfdisplay)->centre_freq = 7056000;
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 
