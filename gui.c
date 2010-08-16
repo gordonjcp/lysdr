@@ -80,6 +80,14 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     }
 }
 
+static void filter_changed(GtkWidget *widget, gpointer psdr) {
+    sdr_data_t *sdr = (sdr_data_t *) psdr;
+    gdouble lowpass = gtk_adjustment_get_value(sdr->lp_tune);
+    gdouble highpass = gtk_adjustment_get_value(sdr->hp_tune);
+    
+    filter_fir_set_response(sdr->filter, sdr->sample_rate, highpass-lowpass, lowpass+(highpass-lowpass)/2);
+}
+
 static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr = (sdr_data_t *) psdr;
     
@@ -176,6 +184,7 @@ void gui_display(sdr_data_t *sdr)
     // FIXME - determine minimum update rate from jack latency
     g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(filter_button), "clicked", G_CALLBACK(filter_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(ssb_button), "clicked", G_CALLBACK(ssb_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(agc_button), "clicked", G_CALLBACK(agc_clicked), sdr);

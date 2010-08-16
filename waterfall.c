@@ -188,6 +188,10 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
             prelight = P_TUNING;
             dirty = TRUE;
         }
+        if (WITHIN(x, priv->lp_pos)) {
+            prelight = P_LOWPASS;
+            dirty = TRUE;
+        }
     }
     if (priv->drag == P_TUNING) {
         // drag cursor to tune
@@ -204,6 +208,13 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
         sdr_waterfall_set_tuning(wf, value);
         prelight = P_TUNING;
         dirty = TRUE;
+    }
+    
+    if (priv->drag == P_LOWPASS) {
+        offset = priv->cursor_pos - x;
+        value = ((float)offset/width)*wf->sample_rate;
+        sdr_waterfall_set_lowpass(wf, (float)value);
+        prelight = P_LOWPASS;
     }
     
     // redraw if the prelight has changed
@@ -304,11 +315,21 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_fill(cr);
     
     // side rails
+    // lowpass
+    if (priv->prelight == P_LOWPASS) {
+        cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
+    } else  {
+        cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
+  
+    }
     cairo_set_line_width(cr, 1);
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
+   
     cairo_move_to(cr, 0.5 + priv->lp_pos, 0);
     cairo_line_to(cr, 0.5 + priv->lp_pos, height);
     cairo_stroke(cr);
+    
+    // highpass
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
     cairo_move_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), 0);
     cairo_line_to(cr, 0.5 + (int)(cursor - wf->hp_tune->value / 48.875), height);
     cairo_stroke(cr);
@@ -361,6 +382,10 @@ float sdr_waterfall_get_highpass(SDRWaterfall *wf) {
 
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->tuning, value);
+}
+
+void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value) {
+    gtk_adjustment_set_value(wf->lp_tune, value);
 }
 
 
