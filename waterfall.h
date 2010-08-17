@@ -79,6 +79,7 @@ float sdr_waterfall_get_highpass(SDRWaterfall *wf);
 
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value);
 void sdr_waterfall_update(GtkWidget *widget, guchar *row);
+void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq);
 
 #endif /* __WATERFALL_H */
 

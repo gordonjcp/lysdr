@@ -6,7 +6,9 @@
 // http://audidude.com/?p=470
 // http://audidude.com/?p=404
 
+#include <math.h>
 #include <string.h>
+
 #include <gtk/gtk.h>
 #include <gtk/gtkadjustment.h>
 #include <gtk/gtkmain.h>
@@ -71,8 +73,11 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     width = widget->allocation.width;
     wf->width = width;
     wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
-    
+
+    // FIXME we do this a lot, maybe it should be a function
+    // maybe we don't need it, since we poke the tuning adjustment  
     priv->cursor_pos = width * (0.5+(wf->tuning->value/wf->sample_rate)); 
+    // FIXME investigate cairo surfaces and speed
     wf->pixmap = gdk_pixmap_new(widget->window, width, wf->wf_height, -1);
     
     // clear the waterfall pixmap to black
@@ -83,7 +88,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     cairo_paint(cr);
     cairo_destroy(cr);
     
-    sdr_waterfall_draw_scale(widget);
+    sdr_waterfall_set_scale(widget, wf->centre_freq);
     
     g_assert(priv->mutex == NULL);
     priv->mutex = g_mutex_new();
@@ -163,14 +168,15 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
     
 }
 
-static void sdr_waterfall_draw_scale(GtkWidget *widget) {
+void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
     // draw the scale to a handy pixmap
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     gint width = wf->width;
-    //GdkPixmap *pix;
     cairo_t *cr;
     gint i, j, scale;
     gchar s[10];
+    
+    wf->centre_freq = centre_freq;
     
     if (!wf->scale) wf->scale = gdk_pixmap_new(widget->window, width, SCALE_HEIGHT, -1);
     
@@ -426,10 +432,6 @@ float sdr_waterfall_get_highpass(SDRWaterfall *wf) {
     return wf->hp_tune->value;
 }
 
-void sdr_waterfall_set_centre(SDRWaterfall *wf, gdouble value) {
-    wf->centre_freq = value;
-    sdr_waterfall_draw_scale(GTK_WIDGET(wf));
-}
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->tuning, value);
 }
