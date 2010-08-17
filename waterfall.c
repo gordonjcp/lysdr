@@ -54,6 +54,10 @@ static void sdr_waterfall_init (SDRWaterfall *wf) {
     wf->centre_freq = 0;
 }
 
+static void sdr_waterfall_filter_cursors(GtkWidget *wf) {
+    
+}
+
 static void sdr_waterfall_realize(GtkWidget *widget) {
     // here we handle things that must happen once the widget has a size
     SDRWaterfall *wf;
@@ -421,7 +425,6 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
 }
 
 /* accessor functions */
-
 float sdr_waterfall_get_tuning(SDRWaterfall *wf) {
     return wf->tuning->value;
 }
@@ -438,9 +441,11 @@ void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
 
 void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->lp_tune, value);
+    gtk_adjustment_set_upper(wf->hp_tune, value);
 }
 void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->hp_tune, value);
+    gtk_adjustment_set_lower(wf->lp_tune, value);
 }
 
 
