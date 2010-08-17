@@ -54,8 +54,13 @@ static void sdr_waterfall_init (SDRWaterfall *wf) {
     wf->centre_freq = 0;
 }
 
-static void sdr_waterfall_filter_cursors(GtkWidget *wf) {
-    
+static void sdr_waterfall_filter_cursors(GtkWidget *widget) {
+    SDRWaterfall *wf = SDR_WATERFALL(widget);
+    SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
+    gint width = wf->width;
+
+    priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
+    priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));   
 }
 
 static void sdr_waterfall_realize(GtkWidget *widget) {
@@ -120,8 +125,9 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     gdouble value = gtk_adjustment_get_value(wf->tuning);   // FIXME - get from *widget?
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
     // need to update the filter positions too
-    priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
-    priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
+    //priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
+    //priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
+    sdr_waterfall_filter_cursors(widget);
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
