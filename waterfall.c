@@ -58,8 +58,18 @@ static void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     gint width = wf->width;
 
-    priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
-    priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));   
+    // fixme - work out best place to put the enum
+    switch(wf->mode) {
+        case 0:
+            priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
+            priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
+            break;
+        case 1:
+            priv->lp_pos = priv->cursor_pos + (width*(wf->lp_tune->value/wf->sample_rate));
+            priv->hp_pos = priv->cursor_pos + (width*(wf->hp_tune->value/wf->sample_rate));
+            break;            
+    }
+    
 }
 
 static void sdr_waterfall_realize(GtkWidget *widget) {
@@ -368,7 +378,7 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     
     // filter cursor
     cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
-    cairo_rectangle(cr, priv->lp_pos, 0, abs(priv->lp_pos - priv->hp_pos), height);
+    cairo_rectangle(cr, MIN(priv->hp_pos, priv->lp_pos), 0, abs(priv->lp_pos - priv->hp_pos), height);
 
     cairo_fill(cr);
     

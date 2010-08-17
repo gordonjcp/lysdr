@@ -32,6 +32,8 @@ struct _SDRWaterfall {
     GdkPixmap *scale;
     cairo_surface_t *pix;
 
+    gint mode;
+
     gint width;
     gint wf_height;
     

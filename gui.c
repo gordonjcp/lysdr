@@ -95,9 +95,11 @@ static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
     if (state == 0) {
         gtk_button_set_label(GTK_BUTTON(widget), "LSB");
         sdr->mode = SDR_LSB;
+        SDR_WATERFALL(wfdisplay)->mode = SDR_LSB;
     } else {
         gtk_button_set_label(GTK_BUTTON(widget), "USB");
         sdr->mode = SDR_USB;
+        SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
     }
 }
 
