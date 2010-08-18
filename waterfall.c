@@ -145,7 +145,8 @@ static void sdr_waterfall_lowpass_changed(GtkWidget *widget, gpointer *p) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->lp_tune);
-    priv->lp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
+    sdr_waterfall_filter_cursors(wf);
+    //priv->lp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -154,7 +155,8 @@ static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->hp_tune);
-    priv->hp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
+    sdr_waterfall_filter_cursors(wf);
+    //priv->hp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
