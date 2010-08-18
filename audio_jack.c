@@ -88,7 +88,7 @@ int audio_stop(sdr_data_t *sdr) {
 
 }
 
-int audio_connect(sdr_data_t *sdr) {
+int audio_connect(sdr_data_t *sdr, gboolean ci, gboolean co) {
     
     const char **ports;
     // start processing audio
@@ -111,22 +111,43 @@ int audio_connect(sdr_data_t *sdr) {
 		fprintf (stderr, "cannot activate client");
 		exit (1);
 	}
-	
-	ports = jack_get_ports (client, NULL, NULL,
+
+    if (co) {
+    	ports = jack_get_ports (client, NULL, NULL,
 				JackPortIsPhysical|JackPortIsInput);
-	if (ports == NULL) {
-		fprintf(stderr, "no physical playback ports\n");
-		exit (1);
-	}
+	    if (ports == NULL) {
+	    	fprintf(stderr, "no physical playback ports\n");
+	    	exit (1);
+	    }
 
-	if (jack_connect (client, jack_port_name (L_out), ports[0])) {
-		fprintf (stderr, "cannot connect output ports\n");
-	}
-	if (jack_connect (client, jack_port_name (R_out), ports[1])) {
-		fprintf (stderr, "cannot connect output ports\n");
-	}
+    	if (jack_connect (client, jack_port_name (L_out), ports[0])) {
+    		fprintf (stderr, "cannot connect output ports\n");
+    	}
+    	if (jack_connect (client, jack_port_name (R_out), ports[1])) {
+    		fprintf (stderr, "cannot connect output ports\n");
+    	}
+        free(ports);
+    }
 
-    free(ports);
+    if (ci) {
+    	ports = jack_get_ports (client, NULL, NULL,
+				JackPortIsPhysical|JackPortIsOutput);
+	    if (ports == NULL) {
+	    	fprintf(stderr, "no physical capture ports\n");
+	    	exit (1);
+	    }
+
+    	if (jack_connect (client, ports[0], jack_port_name (I_in))) {
+    		fprintf (stderr, "cannot connect capture ports\n");
+    	}
+    	if (jack_connect (client, ports[1], jack_port_name (Q_in))) {
+    		fprintf (stderr, "cannot connect capture ports\n");
+    	}
+        free(ports);
+    }
+
+    
+
     
 }
 

@@ -6,10 +6,21 @@ Requirements: gtk, fftw3 and jack, waf to build
 2. Build with "./waf build"
 3. Run with "./build/default/gui"
 
-On startup, lysdr will connect its output to the jack output ports.
+On startup, lysdr will connect its output to the first two jack physical
+output ports if you pass "--co"
 You will need to connect some sort of IQ source to the inputs - this can
 be either a real live soundcard with some SDR hardware, or a prerecorded
-IQ file.
+IQ file.  To automatically connect the first two physical input ports on
+startup, pass "--ci" on the command line.
+
+These options may change in a future build.
+
+Example:
+## don't connect anything
+$ ./build/default/gui
+
+## connect both input and output to lysdr
+$ ./build/default/gui --ci --co 
 
 Drag the slider to tune the radio.  The number below the slider is the
 frequency offset in Hz from the SDR centre (local oscillator) frequency.
