@@ -38,6 +38,7 @@ typedef struct {
     GtkObject *lp_tune; // adjustment for filter lowpass
     GtkObject *hp_tune; // adjustment for filter highpass
     gint mode;          // demodulator mode
+    gint centre_freq;
 
     fft_data_t *fft;
     gint fft_size;

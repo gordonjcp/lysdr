@@ -60,7 +60,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
-    sprintf(l, "<tt>%f</tt>",7.056+(tune/1000000));
+    sprintf(l, "<tt>%4.4f</tt>",(sdr->centre_freq/1000000.0f)+(tune/1000000));
     gtk_label_set_markup(GTK_LABEL(label), l);
 }
 
@@ -154,8 +154,6 @@ void gui_display(sdr_data_t *sdr)
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
-
-
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     
     gtk_widget_show_all(mainWindow);

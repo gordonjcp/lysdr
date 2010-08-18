@@ -13,6 +13,15 @@ be either a real live soundcard with some SDR hardware, or a prerecorded
 IQ file.  To automatically connect the first two physical input ports on
 startup, pass "--ci" on the command line.
 
+Set the displayed centre frequency with  --freq <frequency>
+For the Softrock v6.2 Lite boards, the standard centre frequencies are:
+160m =  1844250
+80m  =  3528000
+40m  =  7056000
+30m  = 10125000
+20m  = 14075000
+15m  = 21045000 
+
 These options may change in a future build.
 
 Example:
