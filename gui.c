@@ -173,7 +173,7 @@ void gui_display(sdr_data_t *sdr)
     // 30m  = 10125000
     // 20m  = 14075000
     // 15m  = 21045000
-    //SDR_WATERFALL(wfdisplay)->centre_freq = 7056000;
+    SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
