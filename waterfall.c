@@ -274,7 +274,11 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
     }
     
     if (priv->drag == P_LOWPASS) {
-        offset = priv->cursor_pos - x;
+        if (wf->mode == 0) {
+            offset = priv->cursor_pos - x;
+        } else {
+            offset = x - priv->cursor_pos;
+        }
         value = ((float)offset/width)*wf->sample_rate;
         sdr_waterfall_set_lowpass(wf, (float)value);
         prelight = P_LOWPASS;
@@ -282,7 +286,11 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
     
         
     if (priv->drag == P_HIGHPASS) {
-        offset = priv->cursor_pos - x;
+        if (wf->mode == 0) {
+            offset = priv->cursor_pos - x;
+        } else {
+            offset = x - priv->cursor_pos;
+        }
         value = ((float)offset/width)*wf->sample_rate;
         sdr_waterfall_set_highpass(wf, (float)value);
         prelight = P_HIGHPASS;
