@@ -111,13 +111,15 @@ int audio_connect(sdr_data_t *sdr) {
 		fprintf (stderr, "cannot activate client");
 		exit (1);
 	}
-	
+
+/*	
 	ports = jack_get_ports (client, NULL, NULL,
 				JackPortIsPhysical|JackPortIsInput);
 	if (ports == NULL) {
 		fprintf(stderr, "no physical playback ports\n");
 		exit (1);
 	}
+
 
 	if (jack_connect (client, jack_port_name (L_out), ports[0])) {
 		fprintf (stderr, "cannot connect output ports\n");
@@ -127,6 +129,7 @@ int audio_connect(sdr_data_t *sdr) {
 	}
 
     free(ports);
+*/
     
 }
 
