@@ -35,6 +35,9 @@ Drag the slider to tune the radio.  The number below the slider is the
 frequency offset in Hz from the SDR centre (local oscillator) frequency.
 Right-drag for bandspread tuning (1Hz steps).
 
+Drag the sides of the yellow filter bar to adjust the bandpass filter upper and
+lower edges.
+
 There are toggle buttons to select fast and slow AGC, wide and narrow filtering
 and USB/LSB demodulation.  There's also a not-very-good S meter.
 

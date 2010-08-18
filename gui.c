@@ -60,7 +60,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     float tune = GTK_ADJUSTMENT(widget)->value;
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
-    sprintf(l, "<tt>%4.4f</tt>",(sdr->centre_freq/1000000.0f)+(tune/1000000));
+    sprintf(l, "<tt>%4.5f</tt>",(sdr->centre_freq/1000000.0f)+(tune/1000000));
     gtk_label_set_markup(GTK_LABEL(label), l);
 }
 
@@ -70,10 +70,21 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     if (state == 0) {
         gtk_button_set_label(GTK_BUTTON(widget), "WIDE");
         filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
+        sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+        sdr_waterfall_set_highpass(wfdisplay, 300.0f);
     } else {
         gtk_button_set_label(GTK_BUTTON(widget), "NARROW");
-        filter_fir_set_response(sdr->filter, sdr->sample_rate, 1500, 1850);
+        filter_fir_set_response(sdr->filter, sdr->sample_rate, 1500, 1650);
+        sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
+        sdr_waterfall_set_highpass(wfdisplay, 900.0f);
     }
+}
+
+static void filter_changed(GtkWidget *widget, gpointer psdr) {
+    sdr_data_t *sdr = (sdr_data_t *) psdr;
+    gdouble lowpass = gtk_adjustment_get_value(GTK_ADJUSTMENT(sdr->lp_tune));
+    gdouble highpass = gtk_adjustment_get_value(GTK_ADJUSTMENT(sdr->hp_tune));
+    filter_fir_set_response(sdr->filter, sdr->sample_rate, highpass-lowpass, lowpass+(highpass-lowpass)/2);
 }
 
 static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
@@ -83,10 +94,13 @@ static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
     if (state == 0) {
         gtk_button_set_label(GTK_BUTTON(widget), "LSB");
         sdr->mode = SDR_LSB;
+        SDR_WATERFALL(wfdisplay)->mode = SDR_LSB;
     } else {
         gtk_button_set_label(GTK_BUTTON(widget), "USB");
         sdr->mode = SDR_USB;
+        SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
     }
+    sdr_waterfall_filter_cursors(wfdisplay); // hacky
 }
 
 static void agc_clicked(GtkWidget *widget, gpointer psdr) {
@@ -125,7 +139,7 @@ void gui_display(sdr_data_t *sdr)
 
     // tuning scale
     tune_max = (float)sdr->sample_rate;
-    sdr->tuning = gtk_adjustment_new(0, -tune_max/2, tune_max/2, 10, 100, 0);
+    sdr->tuning = gtk_adjustment_new(-1, -tune_max/2, tune_max/2, 10, 100, 0);
     
     
     sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
@@ -152,16 +166,26 @@ void gui_display(sdr_data_t *sdr)
 
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
+    // common softrock frequencies
+    // 160m =  1844250
+    // 80m  =  3528000
+    // 40m  =  7056000
+    // 30m  = 10125000
+    // 20m  = 14075000
+    // 15m  = 21045000
+    //SDR_WATERFALL(wfdisplay)->centre_freq = 7056000;
     gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
     gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     
     gtk_widget_show_all(mainWindow);
-    
+
     // connect handlers
     // FIXME - determine minimum update rate from jack latency
     g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
+    gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(filter_button), "clicked", G_CALLBACK(filter_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(ssb_button), "clicked", G_CALLBACK(ssb_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(agc_button), "clicked", G_CALLBACK(agc_clicked), sdr);

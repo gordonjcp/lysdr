@@ -18,7 +18,7 @@ static GOptionEntry opts[] =
 {
   { "ci", 0, 0, G_OPTION_ARG_NONE, &connect_input, "Autoconnect input to first two jack capture ports", NULL },
   { "co", 0, 0, G_OPTION_ARG_NONE, &connect_output, "Autoconnect output to first two jack playback ports", NULL },
-  { "freq", 'f', 1, G_OPTION_ARG_INT, &centre_freq, "Set the centre frequency in Hz (default 7056000)", NULL},
+  { "freq", 'f', 1, G_OPTION_ARG_INT, &centre_freq, "Set the centre frequency in Hz", NULL},
   { NULL }
 };
 
@@ -39,9 +39,7 @@ int main(int argc, char *argv[]) {
 
     gtk_init(&argc, &argv);
     
-    centre_freq = 7056000;
-    
-    context = g_option_context_new ("- test tree model performance");
+    context = g_option_context_new ("-");
     g_option_context_add_main_entries (context, opts, NULL);
     g_option_context_add_group (context, gtk_get_option_group (TRUE));
     if (!g_option_context_parse (context, &argc, &argv, &error)) {
@@ -64,10 +62,9 @@ int main(int argc, char *argv[]) {
     sdr->centre_freq = centre_freq;
 
     gui_display(sdr);
-    
-    
-    gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 1015);
-       
+
+    gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
+
     gtk_main();
     audio_stop(sdr);
     filter_fir_destroy(sdr->filter);
