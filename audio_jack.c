@@ -131,7 +131,7 @@ int audio_connect(sdr_data_t *sdr, gboolean ci, gboolean co) {
 
     if (ci) {
     	ports = jack_get_ports (client, NULL, NULL,
-				/*JackPortIsPhysical|*/JackPortIsOutput);
+				JackPortIsPhysical|JackPortIsOutput);
 	    if (ports == NULL) {
 	    	fprintf(stderr, "no physical capture ports\n");
 	    	exit (1);
