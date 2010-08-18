@@ -20,8 +20,8 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
         if (k==0) z=(float)K/taps;
         else z=1.0/taps*sin(M_PI*k*K/taps)/sin(M_PI*k/taps);
         // apply a windowing function.  I can't hear any difference...
-        w = 0.5 + 0.5 * cos(2.0 * M_PI * k / taps); // Hanning window
-        //w = 0.42 + 0.5 * cos(2.0 * M_PI * k / N) + 0.08 * cos(4. * M_PI * k / N); // Blackman window
+        //w = 0.5 + 0.5 * cos(2.0 * M_PI * k / taps); // Hanning window
+        w = 0.42 + 0.5 * cos(2.0f * M_PI * k / taps) + 0.08 * cos(4.0f * M_PI * k / taps); // Blackman window
         //w=1; // No window
         z *= w; 
         z *= 2*cexp(-1*I * tune * k);

@@ -70,13 +70,13 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     if (state == 0) {
         gtk_button_set_label(GTK_BUTTON(widget), "WIDE");
         filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
-        gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->lp_tune), 3400);
-        gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->hp_tune), 300);
+        sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+        sdr_waterfall_set_highpass(wfdisplay, 300.0f);
     } else {
         gtk_button_set_label(GTK_BUTTON(widget), "NARROW");
         filter_fir_set_response(sdr->filter, sdr->sample_rate, 1500, 1650);
-        gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->lp_tune), 2400);
-        gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->hp_tune), 900);
+        sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
+        sdr_waterfall_set_highpass(wfdisplay, 900.0f);
     }
 }
 
@@ -84,7 +84,6 @@ static void filter_changed(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr = (sdr_data_t *) psdr;
     gdouble lowpass = gtk_adjustment_get_value(GTK_ADJUSTMENT(sdr->lp_tune));
     gdouble highpass = gtk_adjustment_get_value(GTK_ADJUSTMENT(sdr->hp_tune));
-    
     filter_fir_set_response(sdr->filter, sdr->sample_rate, highpass-lowpass, lowpass+(highpass-lowpass)/2);
 }
 
