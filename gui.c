@@ -57,7 +57,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr;
     char l[20];
     sdr = (sdr_data_t *) psdr;
-    float tune = GTK_ADJUSTMENT(widget)->value;
+    float tune = gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
     sprintf(l, "<tt>%4.5f</tt>",(sdr->centre_freq/1000000.0f)+(tune/1000000));
@@ -100,7 +100,7 @@ static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
         sdr->mode = SDR_USB;
         SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
     }
-    sdr_waterfall_filter_cursors(wfdisplay); // hacky
+    sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
 }
 
 static void agc_clicked(GtkWidget *widget, gpointer psdr) {

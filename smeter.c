@@ -2,7 +2,6 @@
 /* Copyright 2010 Gordon JC Pearce <gordon@gjcp.net> */
 
 #include <gtk/gtk.h>
-#include <gtk/gtkmain.h>
 #include "smeter.h"
 
 static GtkWidgetClass *parent_class = NULL;
@@ -37,7 +36,7 @@ GtkWidget *sdr_smeter_new() {
 }
 
 static gboolean sdr_smeter_expose(GtkWidget *widget, GdkEventExpose *event) {
-    cairo_t *cr = gdk_cairo_create(widget->window);
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
 
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_paint(cr);

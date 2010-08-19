@@ -10,8 +10,6 @@
 #include <string.h>
 
 #include <gtk/gtk.h>
-#include <gtk/gtkadjustment.h>
-#include <gtk/gtkmain.h>
 
 #include "waterfall.h"
 
@@ -58,15 +56,16 @@ void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
     gint width = wf->width;
 
-    // fixme - work out best place to put the enum
+    // FIXME - work out best place to put the enum
+    // FIXME - use accessors for filters rather than gtk_adjustment_get_value
     switch(wf->mode) {
         case 0:
-            priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
-            priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
+            priv->lp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->lp_tune)/wf->sample_rate));
+            priv->hp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->hp_tune)/wf->sample_rate));
             break;
         case 1:
-            priv->lp_pos = priv->cursor_pos + (width*(wf->lp_tune->value/wf->sample_rate));
-            priv->hp_pos = priv->cursor_pos + (width*(wf->hp_tune->value/wf->sample_rate));
+            priv->lp_pos = priv->cursor_pos + (width*(gtk_adjustment_get_value(wf->lp_tune)/wf->sample_rate));
+            priv->hp_pos = priv->cursor_pos + (width*(gtk_adjustment_get_value(wf->hp_tune)/wf->sample_rate));
             break;            
     }
     
@@ -75,6 +74,7 @@ void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
 static void sdr_waterfall_realize(GtkWidget *widget) {
     // here we handle things that must happen once the widget has a size
     SDRWaterfall *wf;
+    GtkAllocation *allocation;
     cairo_t *cr;
     gint i, j, scale, width;
     char s[10];
@@ -88,15 +88,16 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     GTK_WIDGET_CLASS(parent_class)->realize(widget);
     
     // save width and height to clamp rendering size
-    width = widget->allocation.width;
+    gtk_widget_get_allocation(widget, allocation);
+    width = allocation->width;
     wf->width = width;
-    wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
+    wf->wf_height = allocation->height - SCALE_HEIGHT;
 
     // FIXME we do this a lot, maybe it should be a function
     // maybe we don't need it, since we poke the tuning adjustment  
-    priv->cursor_pos = width * (0.5+(wf->tuning->value/wf->sample_rate)); 
+    priv->cursor_pos = width * (0.5+(gtk_adjustment_get_value(wf->tuning)/wf->sample_rate)); 
     // FIXME investigate cairo surfaces and speed
-    wf->pixmap = gdk_pixmap_new(widget->window, width, wf->wf_height, -1);
+    wf->pixmap = gdk_pixmap_new(gtk_widget_get_window(widget), width, wf->wf_height, -1);
     
     // clear the waterfall pixmap to black
     // not sure if there's a better way to do this
@@ -199,7 +200,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
     
     wf->centre_freq = centre_freq;
     
-    if (!wf->scale) wf->scale = gdk_pixmap_new(widget->window, width, SCALE_HEIGHT, -1);
+    if (!wf->scale) wf->scale = gdk_pixmap_new(gtk_widget_get_window(widget), width, SCALE_HEIGHT, -1);
     
     cr = gdk_cairo_create(wf->scale);
     cairo_rectangle(cr, 0, 0, width, SCALE_HEIGHT);
@@ -356,7 +357,7 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     int height = wf->wf_height;
     int cursor;
     
-    cairo_t *cr = gdk_cairo_create (widget->window);
+    cairo_t *cr = gdk_cairo_create (gtk_widget_get_window(widget));
     
     if (wf->scale) {    // might not have a scale
         gdk_cairo_set_source_pixmap(cr, wf->scale, 0, height);
@@ -451,13 +452,13 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
 
 /* accessor functions */
 float sdr_waterfall_get_tuning(SDRWaterfall *wf) {
-    return wf->tuning->value;
+    return gtk_adjustment_get_value(wf->tuning);
 }
 float sdr_waterfall_get_lowpass(SDRWaterfall *wf) {
-    return wf->lp_tune->value;
+    return gtk_adjustment_get_value(wf->lp_tune);
 }
 float sdr_waterfall_get_highpass(SDRWaterfall *wf) {
-    return wf->hp_tune->value;
+    return gtk_adjustment_get_value(wf->hp_tune);
 }
 
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
