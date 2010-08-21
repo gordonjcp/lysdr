@@ -74,7 +74,7 @@ void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
 static void sdr_waterfall_realize(GtkWidget *widget) {
     // here we handle things that must happen once the widget has a size
     SDRWaterfall *wf;
-    GtkAllocation *allocation;
+//    GtkAllocation *allocation;
     cairo_t *cr;
     gint i, j, scale, width;
     char s[10];
@@ -86,12 +86,19 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
 
     // chain up so we even *have* the size;
     GTK_WIDGET_CLASS(parent_class)->realize(widget);
-    
+
     // save width and height to clamp rendering size
-    gtk_widget_get_allocation(widget, allocation);
-    width = allocation->width;
+    // this just segfaults
+    //gtk_widget_get_allocation(widget, allocation);
+    //width = allocation->width;
+    //wf->width = width;
+    //wf->wf_height = allocation->height - SCALE_HEIGHT;
+
+    // do it the non-Gtk3-friendly way
+    width = widget->allocation.width;
     wf->width = width;
-    wf->wf_height = allocation->height - SCALE_HEIGHT;
+    wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
+
 
     // FIXME we do this a lot, maybe it should be a function
     // maybe we don't need it, since we poke the tuning adjustment  

@@ -19,10 +19,8 @@ def configure(conf):
     conf.env.CCFLAGS = ['-O0', '-g3']
     conf.env.CCFLAGS +=  ['-DG_DISABLE_SINGLE_INCLUDES','-DGDK_PIXBUF_DISABLE_SINGLE_INCLUDES', '-DGTK_DISABLE_SINGLE_INCLUDES']
     conf.env.CCFLAGS +=  ["-DG_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"]
-    conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]
+    #conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]
 
-    
-    
     conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.6.0', mandatory=True, args='--cflags --libs')
     conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.118.0', args = '--cflags --libs')
     conf.check_cfg(package = 'fftw3', uselib_store='FFTW', atleast_version = '3.2.2', args = '--cflags --libs')
