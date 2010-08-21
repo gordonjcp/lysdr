@@ -1,10 +1,18 @@
-/* waterfall.c */
-/* Copyright 2010 Gordon JC Pearce <gordon@gjcp.net> */
+/*  lysdr Software Defined Radio
+    (C) 2010 Gordon JC Pearce MM0YEQ
+    
+    waterfall.c
+    draw the waterfall display, and tuning cursors
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; version 2 of the License.
 
-
-// http://cairographics.org/threaded_animation_with_cairo/
-// http://audidude.com/?p=470
-// http://audidude.com/?p=404
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+*/
 
 #include <math.h>
 #include <string.h>
