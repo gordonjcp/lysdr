@@ -1,0 +1,4 @@
+Filter state should be wide, narrow or "free" if the sliders have been changed
+Possibly filter button shouldn't be a toggle button, but two non-latching for wide and narrow?
+Remove filter buttons altogether?
+
