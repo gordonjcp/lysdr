@@ -60,7 +60,7 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     float tune = gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
 
     sdr->loPhase = cexp((I * -2.0 * 3.14159 * tune) / sdr->sample_rate);
-    sprintf(l, "<tt>%4.5f</tt>",(sdr->centre_freq/1000000.0f)+(tune/1000000));
+    sprintf(l, "<span size=\"large\">%4.5f</span>",(sdr->centre_freq/1000000.0f)+(tune/1000000));
     gtk_label_set_markup(GTK_LABEL(label), l);
 }
 
