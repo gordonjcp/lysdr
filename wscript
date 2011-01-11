@@ -32,7 +32,7 @@ def build(bld):
         source = bld.path.ant_glob('**/*.c'),
         #source = ('audio_jack.c filter.c gui.c lysdr.c sdr.c waterfall/waterfall.c'),
         #include = ['.', './waterfall',],
-        target = 'gui',
+        target = 'lysdr',
         uselib = "GTK JACK FFTW",
         includes = '. /usr/include ./waterfall')
 
