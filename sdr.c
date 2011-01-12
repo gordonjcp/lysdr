@@ -87,7 +87,9 @@ int sdr_process(sdr_data_t *sdr) {
     if (agc_peak == 0) agc_peak = 0.00001;    // don't be zero, in case we have digital silence
     y = agc_peak * agc_gain;  // y is the peak level scaled by the current gain
 
-    if (y <= 1) {       // Current level is below the soundcard max, increase gain
+    if (sdr->agc_speed < 0) {
+        // AGC locked; don't change
+    } else if (y <= 1) {       // Current level is below the soundcard max, increase gain
         agc_gain += (1/ agc_peak - agc_gain) * sdr->agc_speed;
     } else {                   // decrease gain
         agc_gain += (1 / agc_peak - agc_gain);

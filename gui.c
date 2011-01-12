@@ -116,16 +116,20 @@ static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
     sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
 }
 
-static void agc_clicked(GtkWidget *widget, gpointer psdr) {
+static void agc_changed(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr = (sdr_data_t *) psdr;
-    
-    gint state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-    if (state == 0) {
-        gtk_button_set_label(GTK_BUTTON(widget), "FAST");
-        sdr->agc_speed = 0.005;
-    } else {
-        gtk_button_set_label(GTK_BUTTON(widget), "SLOW");
-        sdr->agc_speed = 0.001;
+
+    gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+    switch (state) {
+        case 0:
+            sdr->agc_speed = 0.005;
+            break;
+        case 1:
+            sdr->agc_speed = 0.001;
+            break;
+        case 2:
+            sdr->agc_speed = -1.0;
+            break;
     }
 }
 
@@ -140,7 +144,7 @@ void gui_display(sdr_data_t *sdr)
     GtkWidget *hpslider;
     GtkWidget *filter_button;
     GtkWidget *ssb_button;
-    GtkWidget *agc_button;
+    GtkWidget *agc_combo;
     
     float tune_max;
     
@@ -164,8 +168,12 @@ void gui_display(sdr_data_t *sdr)
     meter = sdr_smeter_new(NULL);
     gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
 
-    agc_button = gtk_toggle_button_new_with_label("FAST");
-    gtk_box_pack_start(GTK_BOX(hbox), agc_button, TRUE, TRUE, 0);
+    agc_combo = gtk_combo_box_new_text();
+    gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Fast");
+    gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Slow");
+    gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Lock");
+    gtk_combo_box_set_active(GTK_COMBO_BOX(agc_combo), 0);
+    gtk_box_pack_start(GTK_BOX(hbox), agc_combo, TRUE, TRUE, 0);
 
     // VFO readout
     label = gtk_label_new (NULL);
@@ -201,6 +209,6 @@ void gui_display(sdr_data_t *sdr)
     gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(filter_button), "clicked", G_CALLBACK(filter_clicked), sdr);
     gtk_signal_connect(GTK_OBJECT(ssb_button), "clicked", G_CALLBACK(ssb_clicked), sdr);
-    gtk_signal_connect(GTK_OBJECT(agc_button), "clicked", G_CALLBACK(agc_clicked), sdr);
+    gtk_signal_connect(GTK_OBJECT(agc_combo), "changed", G_CALLBACK(agc_changed), sdr);
 }
 
