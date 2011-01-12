@@ -28,6 +28,7 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
 static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event);
 static gboolean sdr_waterfall_button_press(GtkWidget *widget, GdkEventButton *event);
 static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *event);
+static gboolean sdr_waterfall_scroll(GtkWidget *widget, GdkEventScroll *event);
 static void sdr_waterfall_realize(GtkWidget *widget);
 static void sdr_waterfall_unrealize(GtkWidget *widget);
 static void sdr_waterfall_draw_scale(GtkWidget *widget);
@@ -45,7 +46,8 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     widget_class->button_press_event = sdr_waterfall_button_press;
     widget_class->button_release_event = sdr_waterfall_button_release;
     widget_class->motion_notify_event = sdr_waterfall_motion_notify;
-    
+    widget_class->scroll_event = sdr_waterfall_scroll;
+
     g_type_class_add_private (class, sizeof (SDRWaterfallPrivate));
 
 }
@@ -53,7 +55,7 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
 static void sdr_waterfall_init (SDRWaterfall *wf) {
     
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
-    gtk_widget_set_events(GTK_WIDGET(wf), GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK);
+    gtk_widget_set_events(GTK_WIDGET(wf), GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_POINTER_MOTION_MASK | GDK_SCROLL_MASK);
     priv->prelight = P_NONE;
     priv->drag = P_NONE;
     priv->scroll_pos = 0;
@@ -361,6 +363,33 @@ static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *
         gtk_widget_queue_draw(widget);
     }
     priv->drag = P_NONE;
+    return FALSE;
+}
+
+static gboolean sdr_waterfall_scroll(GtkWidget *widget, GdkEventScroll *event) {
+    SDRWaterfall *wf = SDR_WATERFALL(widget);
+    float tuning = gtk_adjustment_get_value(wf->tuning);
+    float step;
+
+    if (event->state & GDK_MOD1_MASK) {
+        step = 10000.0;
+    } else if (event->state & GDK_SHIFT_MASK) {
+        step = 1000.0;
+    } else {
+        step = 100.0;
+    }
+
+    switch (event->direction) {
+        case GDK_SCROLL_UP:
+            tuning -= step;
+            break;
+        case GDK_SCROLL_DOWN:
+            tuning += step;
+            break;
+    }
+
+    sdr_waterfall_set_tuning(wf, tuning);
+
     return FALSE;
 }
 
