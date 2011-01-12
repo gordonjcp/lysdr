@@ -24,10 +24,10 @@
 extern void gui_display();  // ugh, there should be a header file for the GUI
 sdr_data_t *sdr;
 
-static gboolean connect_input;
-static gboolean connect_output;
-static gint centre_freq;
-static gchar *tuning_hook;
+static gboolean connect_input = FALSE;
+static gboolean connect_output = FALSE;
+static gint centre_freq = 0;
+static gchar *tuning_hook = NULL;
 
 static GOptionEntry opts[] = 
 {
