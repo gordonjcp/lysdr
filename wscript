@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # the following two variables are used by the target "waf dist"
-VERSION='0.0.5'
+VERSION='0.0.6'
 APPNAME='lysdr'
 
 # these variables are mandatory ('/' are converted automatically)
