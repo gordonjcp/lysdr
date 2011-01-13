@@ -4,7 +4,7 @@ Requirements: gtk, fftw3 and jack, waf to build
 
 1. Configure with "./waf configure"
 2. Build with "./waf build"
-3. Run with "./build/default/gui"
+3. Run with "./build/default/lysdr"
 
 On startup, lysdr will connect its output to the first two jack physical
 output ports if you pass "--co"
