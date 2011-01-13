@@ -16,7 +16,7 @@ url="http://lovesthepython.org/git/?p=lysdr.git"
 license=('GPL')
 groups=()
 depends=(fftw gtk2 jack)
-makedepends=('git')
+makedepends=('python' 'git')
 provides=()
 conflicts=()
 replaces=()
