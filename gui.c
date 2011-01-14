@@ -93,13 +93,13 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr = (sdr_data_t *) psdr;
     gint state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     if (state == 0) {
+    	// note that calling this means that the filter gets calculated twice!
+    	// this is because setting the lowpass and highpass each trigger filter_changed()
         gtk_button_set_label(GTK_BUTTON(widget), "WIDE");
-        filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
         sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
         sdr_waterfall_set_highpass(wfdisplay, 300.0f);
     } else {
         gtk_button_set_label(GTK_BUTTON(widget), "NARROW");
-        filter_fir_set_response(sdr->filter, sdr->sample_rate, 1500, 1650);
         sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
         sdr_waterfall_set_highpass(wfdisplay, 900.0f);
     }

@@ -19,6 +19,8 @@
 #include "filter.h"
 #include "sdr.h"
 
+#define IS_ALMOST_DENORMAL(f) (fabs(f) < 3.e-34)
+
 static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
     float K = bw * taps / sample_rate;
@@ -37,6 +39,8 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
         //w=1; // No window
         z *= w; 
         z *= 2*cexp(-1*I * tune * k);
+	if (IS_ALMOST_DENORMAL(creal(z))) { printf("%i has real almost-denormal!\n", i); z = I * cimag(z); }
+	if (IS_ALMOST_DENORMAL(cimag(z))) { printf("%i has imaginary almost-denormal!\n", i); z = creal(z); }
         fir_imp[i] = z;
         i++;
     }
@@ -94,9 +98,14 @@ void filter_fir_process(filter_fir_t *filter, complex *samples) {
         
     for (i = 0; i < filter->size; i++) {
         c = samples[i];
-        // the random number is the horrible hack to avoid denormals
-        buf_I[index] = creal(c)+(0.000000001*((float)rand()/RAND_MAX-0.5));
-    	buf_Q[index] = cimag(c)+(0.000000001*((float)rand()/RAND_MAX-0.5));
+        buf_I[index] = creal(c);
+    	buf_Q[index] = cimag(c);
+	// flush denormals
+	if (IS_ALMOST_DENORMAL(buf_I[index])) { buf_I[index]=0; }
+	if (IS_ALMOST_DENORMAL(buf_Q[index])) { buf_Q[index]=0; }
+
+
+
         accI = accQ = 0;
         j = index;
     	for (k = 0; k < taps; k++) {
