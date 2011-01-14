@@ -24,9 +24,9 @@
 extern sdr_data_t *sdr;
 
 // these are global so that the gui_update routine can fiddle with them
-GtkWidget *label;
-GtkWidget *wfdisplay;
-GtkWidget *meter;
+static GtkWidget *label;
+static GtkWidget *wfdisplay;
+static GtkWidget *meter;
 
 /*
 // red hot
@@ -59,7 +59,6 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
         y=6*cabs(z);
         y = CLAMP(y , 0, 1.0);
         colour = colourmap[(int)(255*y)];
-        //colour = colourmap[j&0xff];
         data[j++] = (colour>>8)&0xff;
         data[j++] = (colour>>16)&0xff;
         data[j++] = colour>>24;
@@ -72,15 +71,13 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
     if (y<0) y = 0;
     if (y>1) y = 1;
     y=y*y;
-    //gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progress), y);
     sdr_smeter_set_level(SDR_SMETER(meter), y);
   return TRUE;
 }
 
-
 static void tuning_changed(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr;
-    char l[20];
+    char l[256];
     sdr = (sdr_data_t *) psdr;
     float tune = gtk_adjustment_get_value(GTK_ADJUSTMENT(widget));
 
@@ -91,17 +88,17 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
 
 static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr = (sdr_data_t *) psdr;
-    gint state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-    if (state == 0) {
-    	// note that calling this means that the filter gets calculated twice!
-    	// this is because setting the lowpass and highpass each trigger filter_changed()
-        gtk_button_set_label(GTK_BUTTON(widget), "WIDE");
-        sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
-        sdr_waterfall_set_highpass(wfdisplay, 300.0f);
-    } else {
-        gtk_button_set_label(GTK_BUTTON(widget), "NARROW");
-        sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
-        sdr_waterfall_set_highpass(wfdisplay, 900.0f);
+    gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+    switch (state) {
+        case 0:
+    		sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+	        sdr_waterfall_set_highpass(wfdisplay, 300.0f);
+	        break;
+        case 1:
+		    sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
+    		sdr_waterfall_set_highpass(wfdisplay, 900.0f);
+            sdr->agc_speed = 0.001;
+            break;
     }
 }
 
@@ -112,18 +109,18 @@ static void filter_changed(GtkWidget *widget, gpointer psdr) {
     filter_fir_set_response(sdr->filter, sdr->sample_rate, highpass-lowpass, lowpass+(highpass-lowpass)/2);
 }
 
-static void ssb_clicked(GtkWidget *widget, gpointer psdr) {
+static void mode_changed(GtkWidget *widget, gpointer psdr) {
     sdr_data_t *sdr = (sdr_data_t *) psdr;
-    
-    gint state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-    if (state == 0) {
-        gtk_button_set_label(GTK_BUTTON(widget), "LSB");
-        sdr->mode = SDR_LSB;
-        SDR_WATERFALL(wfdisplay)->mode = SDR_LSB;
-    } else {
-        gtk_button_set_label(GTK_BUTTON(widget), "USB");
-        sdr->mode = SDR_USB;
-        SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
+    gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	switch(state) {
+		case SDR_LSB:
+	        sdr->mode = SDR_LSB;
+	        SDR_WATERFALL(wfdisplay)->mode = SDR_LSB;
+	        break;
+		case SDR_USB:
+	        sdr->mode = SDR_USB;
+	        SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
+			break;
     }
     sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
 }
@@ -154,8 +151,8 @@ void gui_display(sdr_data_t *sdr)
     GtkWidget *hbox;
     GtkWidget *lpslider;
     GtkWidget *hpslider;
-    GtkWidget *filter_button;
-    GtkWidget *ssb_button;
+    GtkWidget *filter_combo;
+    GtkWidget *mode_combo;
     GtkWidget *agc_combo;
     
     float tune_max;
@@ -192,11 +189,17 @@ void gui_display(sdr_data_t *sdr)
     gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
     gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
 
-    filter_button = gtk_toggle_button_new_with_label("WIDE");
-    gtk_box_pack_start(GTK_BOX(hbox), filter_button, TRUE, TRUE, 0);
-    ssb_button = gtk_toggle_button_new_with_label("LSB");
-    gtk_box_pack_start(GTK_BOX(hbox), ssb_button, TRUE, TRUE, 0);
+	filter_combo = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Wide");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Narrow");
+    gtk_combo_box_set_active(GTK_COMBO_BOX(filter_combo), 0);
+    gtk_box_pack_start(GTK_BOX(hbox), filter_combo, TRUE, TRUE, 0);
 
+	mode_combo = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "LSB");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "USB");
+    gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
+    gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 
     wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
     // common softrock frequencies
@@ -219,8 +222,10 @@ void gui_display(sdr_data_t *sdr)
     gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
-    gtk_signal_connect(GTK_OBJECT(filter_button), "clicked", G_CALLBACK(filter_clicked), sdr);
-    gtk_signal_connect(GTK_OBJECT(ssb_button), "clicked", G_CALLBACK(ssb_clicked), sdr);
+    gtk_signal_connect(GTK_OBJECT(filter_combo), "changed", G_CALLBACK(filter_clicked), sdr);
+    gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
     gtk_signal_connect(GTK_OBJECT(agc_combo), "changed", G_CALLBACK(agc_changed), sdr);
 }
+
+/* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
 
