@@ -31,8 +31,6 @@ def build(bld):
     bld(
         features = 'cc cprogram',
         source = bld.path.ant_glob('**/*.c'),
-        #source = ('audio_jack.c filter.c gui.c lysdr.c sdr.c waterfall/waterfall.c'),
-        #include = ['.', './waterfall',],
         target = 'lysdr',
         uselib = "GTK JACK FFTW",
         includes = '. /usr/include ./waterfall')

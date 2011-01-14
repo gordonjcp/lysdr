@@ -39,8 +39,8 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
         //w=1; // No window
         z *= w; 
         z *= 2*cexp(-1*I * tune * k);
-	if (IS_ALMOST_DENORMAL(creal(z))) { printf("%i has real almost-denormal!\n", i); z = I * cimag(z); }
-	if (IS_ALMOST_DENORMAL(cimag(z))) { printf("%i has imaginary almost-denormal!\n", i); z = creal(z); }
+	if (IS_ALMOST_DENORMAL(creal(z))) { z = I * cimag(z); }
+	if (IS_ALMOST_DENORMAL(cimag(z))) { z = creal(z); }
         fir_imp[i] = z;
         i++;
     }
