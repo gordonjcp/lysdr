@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <jack/jack.h>
+#include <errno.h>
 #include "sdr.h"
 #include "audio_jack.h"
 
@@ -68,8 +69,8 @@ int audio_start(sdr_data_t *sdr) {
     // open a client connection to the JACK server
 	client = jack_client_open (client_name, JackNullOption, &status, NULL);
 	if (client == NULL) {
-		fprintf (stderr, "jack_client_open() failed, "
-			 "status = 0x%2.0x\n", status);
+	    
+		fprintf (stderr, "jack_client_open() failed - check jack installation (status %x)\n", status);
 		if (status & JackServerFailed) {
 			fprintf (stderr, "Unable to connect to JACK server\n");
 		}
