@@ -53,6 +53,7 @@ int sdr_process(sdr_data_t *sdr) {
     complex c;
     fft_data_t *fft = sdr->fft;
     int size = sdr->size;
+    int block_size = MIN(size, FFT_SIZE);   // ensure we don't try to copy a block larger than FFT_SIZE
     
     float agc_gain = sdr->agc_gain;
     float agc_peak = 0;
@@ -64,10 +65,11 @@ int sdr_process(sdr_data_t *sdr) {
                 sdr->dc_remove = c;
     }
 
-    // copy this period to FFT buffer
-    // FIXME - needs to deal with cases where size isn't a multiple of FFT_SIZE
-    memmove(fft->samples, fft->samples+size, sizeof(complex)*(FFT_SIZE-size));
-    memmove(fft->samples+FFT_SIZE-size, sdr->iqSample, sizeof(complex)*size);
+    // copy this period to FFT buffer, or as much as will fit
+    // note that if the jack periodsize is greater than FFT_LEN, it will only copy FFT_LEN samples
+    memmove(fft->samples, fft->samples+block_size, sizeof(complex)*(FFT_SIZE-block_size)); // move the last lot up
+    memmove(fft->samples+FFT_SIZE-block_size, sdr->iqSample, sizeof(complex)*block_size);  // copy the current block
+
 
     // shift frequency
     for (i = 0; i < sdr->size; i++) {
