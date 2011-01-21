@@ -23,11 +23,11 @@ def configure(conf):
     #conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]
 
     conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.6.0', mandatory=True, args='--cflags --libs')
-    conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.118.0', args = '--cflags --libs')
-    conf.check_cfg(package = 'fftw3', uselib_store='FFTW', atleast_version = '3.2.2', args = '--cflags --libs')
+    conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.118.0', mandatory=True, args = '--cflags --libs')
+    conf.check_cfg(package = 'fftw3', uselib_store='FFTW', atleast_version = '3.2.2', mandatory=True, args = '--cflags --libs')
     
 def build(bld):
-    # 1. A simple program
+    # the main program
     bld(
         features = 'cc cprogram',
         source = bld.path.ant_glob('**/*.c'),
