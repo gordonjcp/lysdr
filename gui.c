@@ -91,13 +91,12 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
     gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
     switch (state) {
         case 0:
-    		sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
-	        sdr_waterfall_set_highpass(wfdisplay, 300.0f);
-	        break;
+			sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+			sdr_waterfall_set_highpass(wfdisplay, 300.0f);
+			break;
         case 1:
-		    sdr_waterfall_set_lowpass(wfdisplay, 2400.0f);
-    		sdr_waterfall_set_highpass(wfdisplay, 900.0f);
-            sdr->agc_speed = 0.001;
+			sdr_waterfall_set_lowpass(wfdisplay, 1500.0f);
+			sdr_waterfall_set_highpass(wfdisplay, 500.0f);
             break;
     }
 }
