@@ -37,7 +37,7 @@ sdr_data_t *sdr_new() {
     sdr->agc_gain = 0;   // start off as quiet as possible
     sdr->mode = SDR_LSB;
     sdr->agc_speed = 0.005;
-    
+	return sdr; 
 }
 
 void sdr_destroy(sdr_data_t *sdr) {
