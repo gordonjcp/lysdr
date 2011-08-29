@@ -8,7 +8,7 @@ APPNAME='lysdr'
 top = '.'
 out = 'build'
 
-def set_options(opt):
+def options(opt):
     opt.tool_options('compiler_cc')
 
 def configure(conf):
@@ -29,8 +29,8 @@ def configure(conf):
 def build(bld):
     # the main program
     bld(
-        features = 'cc cprogram',
-        source = bld.path.ant_glob('**/*.c'),
+        features = 'c cprogram',
+        source = ['lysdr.c', 'sdr.c', 'filter.c', 'audio_jack.c', 'gui.c', 'smeter.c', 'waterfall.c'],
         target = 'lysdr',
         uselib = "GTK JACK FFTW",
         includes = '. /usr/include ./waterfall')
