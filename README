@@ -4,7 +4,7 @@ Requirements: gtk, fftw3 and jack, waf to build
 
 1. Configure with "./waf configure"
 2. Build with "./waf build"
-3. Run with "./build/default/lysdr"
+3. Run with "./build/lysdr"
 
 On startup, lysdr will connect its output to the first two jack physical
 output ports if you pass "--co"
@@ -26,10 +26,10 @@ These options may change in a future build.
 
 Example:
 ## don't connect anything
-$ ./build/default/lysdr
+$ ./build/lysdr
 
 ## connect both input and output to lysdr
-$ ./build/default/lysdr --ci --co 
+$ ./build/lysdr --ci --co 
 
 When using lysdr along with an digimodes program such as fldigi, it's
 useful for both programs to know what frequency lysdr is tuned to.
