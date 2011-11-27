@@ -14,6 +14,10 @@ IQ file.  To automatically connect the first two physical input ports on
 startup, pass "--ci" on the command line.
 
 Set the displayed centre frequency with  --freq <frequency>
+For the Kanga Finningley with the stock local oscillator crystal, the
+standard centre frequency is:
+80m  =  3750000
+
 For the Softrock v6.2 Lite boards, the standard centre frequencies are:
 160m =  1844250
 80m  =  3528000
