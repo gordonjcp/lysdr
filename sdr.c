@@ -76,7 +76,6 @@ int sdr_process(sdr_data_t *sdr) {
 	memmove(fft->samples, fft->samples+block_size, sizeof(complex)*(FFT_SIZE-block_size)); // move the last lot up
 	memmove(fft->samples+FFT_SIZE-block_size, sdr->iqSample, sizeof(complex)*block_size);  // copy the current block
 
-
 	// shift frequency
 	for (i = 0; i < sdr->size; i++) {
 		sdr->iqSample[i] *= sdr->loVector;
@@ -129,10 +128,11 @@ void fft_setup(sdr_data_t *sdr) {
 	sdr->fft = (fft_data_t *)malloc(sizeof(fft_data_t));
 	sdr->fft_size = FFT_SIZE;
 	fft_data_t *fft = sdr->fft;
-	
+
+	fft->windowed = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);	
 	fft->samples = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
 	fft->out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * sdr->fft_size);
-	fft->plan = fftw_plan_dft_1d(sdr->fft_size, fft->samples, fft->out, FFTW_FORWARD, FFTW_ESTIMATE);
+	fft->plan = fftw_plan_dft_1d(sdr->fft_size, fft->windowed, fft->out, FFTW_FORWARD, FFTW_ESTIMATE);
 	fft->status = EMPTY;
 	fft->index = 0;
 }
@@ -140,6 +140,7 @@ void fft_setup(sdr_data_t *sdr) {
 void fft_teardown(sdr_data_t *sdr) {
 	fft_data_t *fft = sdr->fft;
 	fftw_destroy_plan(fft->plan);
+	fftw_free(fft->windowed);
 	fftw_free(fft->samples);
 	fftw_free(fft->out);
 	free(sdr->fft);

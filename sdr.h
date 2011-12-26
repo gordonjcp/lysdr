@@ -31,6 +31,8 @@
 #define FIR_SIZE 1024
 #define MAX_FIR_LEN 8*4096
 
+#define WINDOWED_FFT
+
 enum fft_status {EMPTY,			// fft_data is currently unused
 	FILLING,			// now writing samples to this fft
 	READY};	// ready to perform fft
@@ -38,6 +40,7 @@ enum fft_status {EMPTY,			// fft_data is currently unused
 enum rx_mode { SDR_LSB, SDR_USB };
 
 typedef struct {
+	fftw_complex *windowed;
 	fftw_complex *samples;		// complex data for fft
 	fftw_complex *out;
 	fftw_plan plan;			// fft plan for fftW
@@ -69,6 +72,7 @@ typedef struct {
 	// jack parameters
 	guint size;  // periodsize
 	guint sample_rate;	// samplerate
+	guint wfunc; // selected windowing function
 	
 } sdr_data_t;
 

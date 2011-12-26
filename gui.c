@@ -47,11 +47,32 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 	int i, j, p, hi;
 	gdouble y;
+	
+	gdouble wi, wq;
+	
 	fftw_complex z;
 	guchar data[FFT_SIZE*4];
 	gint32 colour;
 	fft_data_t *fft= sdr->fft;
 
+	// apply fft window
+	// null window
+	memmove(fft->windowed, fft->samples, sizeof(complex)*(FFT_SIZE));
+
+	//printf("\n-----------------------------\n");
+	for (i=0; i<FFT_SIZE; i++) {
+		//fft->windowed[i] *= 0.42 + 0.5 * cos(2.0f * M_PI * i / FFT_SIZE) + 0.08 * cos(4.0f * M_PI * i / FFT_SIZE);;
+		if (sdr->wfunc == 1) {
+			wi = 0.54 - 0.46 * cos(2.0 * M_PI * i/FFT_SIZE);
+			fft->windowed[i] *= wi + I * wi;
+		}
+		if (sdr->wfunc == 2) {
+			wi = 0.42 - 0.5 * cos(2.0f * M_PI * i / FFT_SIZE) + 0.08 * cos(4.0f * M_PI * i / FFT_SIZE);;
+			fft->windowed[i] *= wi + I * wi;
+		}
+
+	}
+	
 	fftw_execute(fft->plan);
 	fft->status=EMPTY;
 	fft->index=0;
@@ -62,7 +83,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
 		z = fft->out[p];	 // contains the FFT data 
-		y=6*cabs(z);
+		y=10*cabs(z);
 		y = CLAMP(y , 0, 1.0);
 		colour = colourmap[(int)(255*y)];
 		data[j++] = (colour>>8)&0xff;
@@ -147,6 +168,14 @@ static void agc_changed(GtkWidget *widget, gpointer psdr) {
 	}
 }
 
+static void wfunc_changed(GtkWidget *widget, gpointer psdr) {
+	sdr_data_t *sdr = (sdr_data_t *) psdr;
+
+	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	sdr->wfunc = state;
+}
+
+
 void gui_display(sdr_data_t *sdr)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -159,6 +188,7 @@ void gui_display(sdr_data_t *sdr)
 	GtkWidget *filter_combo;
 	GtkWidget *mode_combo;
 	GtkWidget *agc_combo;
+	GtkWidget *wfunc_combo;
 	
 	float tune_max;
 	
@@ -199,6 +229,16 @@ void gui_display(sdr_data_t *sdr)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Narrow");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(filter_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), filter_combo, TRUE, TRUE, 0);
+
+#ifdef WINDOWED_FFT
+	wfunc_combo = gtk_combo_box_new_text();
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfunc_combo), "None");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfunc_combo), "Hamming");
+	gtk_combo_box_append_text(GTK_COMBO_BOX(wfunc_combo), "Blackman");
+	gtk_combo_box_set_active(GTK_COMBO_BOX(wfunc_combo), 0);
+	gtk_box_pack_start(GTK_BOX(hbox), wfunc_combo, TRUE, TRUE, 0);
+	gtk_signal_connect(GTK_OBJECT(wfunc_combo), "changed", G_CALLBACK(wfunc_changed), sdr);
+#endif
 
 	mode_combo = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "LSB");
