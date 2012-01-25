@@ -22,6 +22,7 @@
 #include <math.h>
 #include <complex.h> 
 #include <gtk/gtk.h>
+#include <string.h>
 
 #include "sdr.h"
 #include "waterfall.h"
