@@ -52,23 +52,23 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	gdouble wi, wq;
 	
 	fftw_complex z;
-	guchar data[FFT_SIZE*4];
+	guchar data[sdr->fft_size*4];
 	gint32 colour;
 	fft_data_t *fft= sdr->fft;
 
 	// apply fft window
 	// null window
-	memmove(fft->windowed, fft->samples, sizeof(complex)*(FFT_SIZE));
+	memmove(fft->windowed, fft->samples, sizeof(complex)*(sdr->fft_size));
 
 	//printf("\n-----------------------------\n");
-	for (i=0; i<FFT_SIZE; i++) {
+	for (i=0; i<sdr->fft_size; i++) {
 		//fft->windowed[i] *= 0.42 + 0.5 * cos(2.0f * M_PI * i / FFT_SIZE) + 0.08 * cos(4.0f * M_PI * i / FFT_SIZE);;
 		if (sdr->wfunc == 1) {
-			wi = 0.54 - 0.46 * cos(2.0 * M_PI * i/FFT_SIZE);
+			wi = 0.54 - 0.46 * cos(2.0 * M_PI * i/sdr->fft_size);
 			fft->windowed[i] *= wi + I * wi;
 		}
 		if (sdr->wfunc == 2) {
-			wi = 0.42 - 0.5 * cos(2.0f * M_PI * i / FFT_SIZE) + 0.08 * cos(4.0f * M_PI * i / FFT_SIZE);;
+			wi = 0.42 - 0.5 * cos(2.0f * M_PI * i / sdr->fft_size) + 0.08 * cos(4.0f * M_PI * i / sdr->fft_size);;
 			fft->windowed[i] *= wi + I * wi;
 		}
 
@@ -78,9 +78,9 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	fft->status=EMPTY;
 	fft->index=0;
 
-	hi = FFT_SIZE/2;
+	hi = sdr->fft_size/2;
 	j=0;
-	for(i=0; i<FFT_SIZE; i++) {
+	for(i=0; i<sdr->fft_size; i++) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
 		z = fft->out[p];	 // contains the FFT data 
@@ -177,7 +177,7 @@ static void wfunc_changed(GtkWidget *widget, gpointer psdr) {
 }
 
 
-void gui_display(sdr_data_t *sdr)
+void gui_display(sdr_data_t *sdr, gboolean horizontal)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	GtkWidget *waterfall;
@@ -247,7 +247,7 @@ void gui_display(sdr_data_t *sdr)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 
-	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, FFT_SIZE);
+	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
 	// common softrock frequencies
 	// 160m =  1844250
 	// 80m  =  3528000
@@ -255,8 +255,17 @@ void gui_display(sdr_data_t *sdr)
 	// 30m  = 10125000
 	// 20m  = 14075000
 	// 15m  = 21045000
+	if (horizontal)
+		SDR_WATERFALL(wfdisplay)->orientation = WF_O_HORIZONTAL;
 	SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
-	gtk_widget_set_size_request(wfdisplay, FFT_SIZE, 250);
+	switch (SDR_WATERFALL(wfdisplay)->orientation) {
+	case WF_O_VERTICAL:
+		gtk_widget_set_size_request(wfdisplay, sdr->fft_size, 250);
+		break;
+	case WF_O_HORIZONTAL:
+		gtk_widget_set_size_request(wfdisplay, 960, sdr->fft_size);
+		break;
+	}
 	gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	

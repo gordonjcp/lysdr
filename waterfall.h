@@ -40,6 +40,11 @@ enum {
     P_BANDSPREAD
 };
 
+enum {
+    WF_O_VERTICAL,
+    WF_O_HORIZONTAL
+};
+
 struct _SDRWaterfall {
     GtkDrawingArea parent;
     
@@ -52,6 +57,7 @@ struct _SDRWaterfall {
     cairo_surface_t *pix;
 
     gint mode;
+    gint orientation;
 
     gint width;
     gint wf_height;
@@ -91,6 +97,7 @@ G_END_DECLS
 #define WITHIN(x, p) (x-1 > p-LOOSE) && (x-1 < p + LOOSE)
 
 #define SCALE_HEIGHT 24
+#define SCALE_WIDTH 50
 #define SCALE_TICK 5000
 
 GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size);

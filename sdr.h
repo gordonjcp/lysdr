@@ -27,7 +27,6 @@
 #include <fftw3.h>
 #include "filter.h"
 
-#define FFT_SIZE 1024
 #define FIR_SIZE 1024
 #define MAX_FIR_LEN 8*4096
 
@@ -76,7 +75,7 @@ typedef struct {
 	
 } sdr_data_t;
 
-sdr_data_t *sdr_new();
+sdr_data_t *sdr_new(gint fft_size);
 int sdr_process(sdr_data_t *sdr);
 #endif
 

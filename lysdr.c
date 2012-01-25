@@ -27,19 +27,23 @@
 #include "audio_jack.h"
 #include "filter.h"
 
-extern void gui_display();  // ugh, there should be a header file for the GUI
+extern void gui_display(sdr_data_t *sdr, gboolean horizontal);  // ugh, there should be a header file for the GUI
 sdr_data_t *sdr;
 
 static gboolean connect_input = FALSE;
 static gboolean connect_output = FALSE;
+static gboolean horizontal = FALSE;
 static gint centre_freq = 0;
+static gint fft_size = 1024;
 static gchar *tuning_hook = NULL;
 
 static GOptionEntry opts[] = 
 {
+	{ "horizontal", 'H', 0, G_OPTION_ARG_NONE, &horizontal, "Horizontal waterfall", NULL },
 	{ "ci", 0, 0, G_OPTION_ARG_NONE, &connect_input, "Autoconnect input to first two jack capture ports", NULL },
 	{ "co", 0, 0, G_OPTION_ARG_NONE, &connect_output, "Autoconnect output to first two jack playback ports", NULL },
 	{ "freq", 'f', 0, G_OPTION_ARG_INT, &centre_freq, "Set the centre frequency in Hz", "FREQUENCY" },
+	{ "fft-size", 'F', 0, G_OPTION_ARG_INT, &fft_size, "Set the FFT size (default=1024)", "FFT_SIZE" },
 	{ "tuning-hook", 0, 0, G_OPTION_ARG_STRING, &tuning_hook, "Program to run when tuned frequency changes", "PROGRAM" },
 	{ NULL }
 };
@@ -121,7 +125,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// create a new SDR, and set up the jack client
-	sdr = sdr_new();
+	sdr = sdr_new(fft_size);
 	audio_start(sdr);
 
 	// define a filter and configure a default shape
@@ -134,7 +138,7 @@ int main(int argc, char *argv[]) {
 	
 	sdr->centre_freq = centre_freq;
 
-	gui_display(sdr);
+	gui_display(sdr, horizontal);
 
 	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
 
