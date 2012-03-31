@@ -19,6 +19,7 @@
 	You should have received a copy of the GNU General Public License
 	along with lysdr.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
