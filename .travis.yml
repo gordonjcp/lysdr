@@ -1,0 +1,6 @@
+language: c
+compiler:
+  - gcc
+before_script:
+  - sudo apt-get install libjack-dev pkg-config libfftw3-dev libgtk2.0-dev
+script: ./waf configure && ./waf build
