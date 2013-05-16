@@ -25,6 +25,7 @@ def configure(conf):
     conf.check_cfg(package='gtk+-2.0', uselib_store='GTK', atleast_version='2.6.0', mandatory=True, args='--cflags --libs')
     conf.check_cfg(package = 'jack', uselib_store='JACK', atleast_version = '0.118.0', mandatory=True, args = '--cflags --libs')
     conf.check_cfg(package = 'fftw3', uselib_store='FFTW', atleast_version = '3.2.2', mandatory=True, args = '--cflags --libs')
+    conf.check(lib=['m'], uselib_store='M')
     
 def build(bld):
     # the main program
@@ -32,6 +33,6 @@ def build(bld):
         features = 'c cprogram',
         source = ['lysdr.c', 'sdr.c', 'filter.c', 'audio_jack.c', 'gui.c', 'smeter.c', 'waterfall.c'],
         target = 'lysdr',
-        uselib = "GTK JACK FFTW",
+        uselib = "GTK JACK FFTW M",
         includes = '. /usr/include ./waterfall')
 
