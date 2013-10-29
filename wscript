@@ -17,7 +17,7 @@ def configure(conf):
     conf.check(header_name='math.h')
     
     # set for debugging
-    conf.env.CCFLAGS = ['-O0', '-g3']
+    #conf.env.CCFLAGS = ['-O0', '-g3']
     conf.env.CCFLAGS +=  ['-DG_DISABLE_SINGLE_INCLUDES','-DGDK_PIXBUF_DISABLE_SINGLE_INCLUDES', '-DGTK_DISABLE_SINGLE_INCLUDES']
     conf.env.CCFLAGS +=  ["-DG_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"]
     #conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]

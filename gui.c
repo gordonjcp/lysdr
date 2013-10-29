@@ -20,8 +20,6 @@
 	along with lysdr.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define COLOUR_REDHOT
-
 #include <math.h>
 #include <complex.h> 
 #include <gtk/gtk.h>
@@ -48,6 +46,8 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	
 	fftw_complex z;
 	guchar data[sdr->fft_size*4];
+	static gfloat oldy[8192];
+	gfloat filt = 0.5;
 	gint32 colour;
 	fft_data_t *fft= sdr->fft;
 
@@ -70,11 +70,14 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 	hi = sdr->fft_size/2;
 	j=0;
+	
 	for(i=0; i<sdr->fft_size; i++) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
 		z = fft->out[p];	 // contains the FFT data 
 		y=10*cabs(z);
+		y = (y*filt) + (oldy[i]*(1-filt));
+		oldy[i]=y;
 		y = CLAMP(y , 0, 1.0);
 		colour = colourmap[(int)(255*y)];
 		data[j++] = (colour>>8)&0xff;
@@ -82,6 +85,8 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		data[j++] = colour>>24;
 		data[j++] = 255;			
 	} 
+
+	
 
 	sdr_waterfall_update(widget, data);
 
