@@ -40,7 +40,10 @@ typedef struct {
 	fftw_complex *windowed;
 	fftw_complex *samples;		// complex data for fft
 	fftw_complex *out;
-	fftw_plan plan;			// fft plan for fftW
+	fftw_complex *filter;
+	fftw_plan plan;			// fft plan for fftw
+	fftw_plan htplan;			// fft plan for fftw
+	fftw_plan htbplan;			// fft plan for fftw
 	int index;			// position of next fft sample
 	enum fft_status status;		// whether the fft is busy
 } fft_data_t;

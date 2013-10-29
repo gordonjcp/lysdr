@@ -1,5 +1,6 @@
 /*  lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
+	Hilbert transform code from Steve Harris' swh-plugins
 	
 	filter.c
 	contains all filter creation and processing code
@@ -25,8 +26,15 @@
 #include <math.h>
 #include "filter.h"
 #include "sdr.h"
+#include "hilbert.h"
 
 #define IS_ALMOST_DENORMAL(f) (fabs(f) < 3.e-34)
+
+static complex delay[D_SIZE];
+static gfloat alpha, w0, b0, b1, b2, a0, a1, a2;
+static gfloat x1r, x2r, y1r, y2r, x1i, x2i, y1i, y2i;
+    
+
 
 static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
@@ -55,6 +63,16 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
 
 filter_fir_t *filter_fir_new(int taps, int size) {
 	// create the structure for a new FIR filter
+	
+	w0 = 2 * M_PI * 3400.0/48000.0;
+	alpha = sin(w0)/(2*1.707);
+	b0 = (1-cos(w0))/2;
+	b1 =  1-cos(w0);
+	b2 = (1-cos(w0))/2;
+	a0 = 1 + alpha;
+	a1 = -2*cos(w0);
+	a2 = 1 - alpha;
+	
 	filter_fir_t *filter = malloc(sizeof(filter_fir_t));
 	filter->taps = taps;
 	filter->size = size;
@@ -128,15 +146,53 @@ void filter_fir_process(filter_fir_t *filter, complex *samples) {
 
 }
 
+void filter_hilbert(complex *samples, gint taps) {
+	// Hilbert transform, shamelessly nicked from swh-plugins
+	// taps needs to be a multiple of D_SIZE
+	// returns I and Q, with Q rotated through 90 degrees
+	// 100 samples delay
+	gint i, j, dptr = 0;
+	gfloat hilb;
+	for (i = 0; i < taps; i++) {
+	  delay[dptr] = samples[i];
+	  hilb = 0.0f;
+	  for (j = 0; j < NZEROS/2; j++) {
+	    hilb += (-xcoeffs[j] * cimag(delay[(dptr - j*2) & (D_SIZE - 1)]));
+	  }
+	  samples[i] = creal(delay[(dptr-99)& (D_SIZE-1)]) + I * hilb;
+	  dptr = (dptr + 1) & (D_SIZE - 1);
+	}
+
+}
+
+void filter_iir_process(filter_fir_t *filter, complex *samples) {
+	
+	int i;
+	gfloat yr, yi, x;
+
+	for (i = 0; i < filter->size; i++) {
+		x = creal(samples[i]);
+		yr = (b0/a0)*x + (b1/a0)*x1r + (b2/a0)*x2r - (a1/a0)*y1r - (a2/a0)*y2r;
+		y2r = y1r; y1r = yr;
+		x2r = x1r; x1r = x;
+		x = cimag(samples[i]);
+		yi = (b0/a0)*x + (b1/a0)*x1i + (b2/a0)*x2i - (a1/a0)*y1i - (a2/a0)*y2i;
+		y2i = y1i; y1i = yi;
+		x2i = x1i; x1i = x;
+		samples[i] = yr+I*yi;
+	}
+}
+
 /* scratchpad below here */
 /*---------------------------------------------------------*/
 
 #if 0
 
+
 void fft_impulse() {
 	// at this point, fir_imp[] contains our desired impulse.  Now to FFT it ;-)
 
-#if 0
+
 	/* this bit should be broken out to a function only called if the FFT size changes */
 	fir_len = N;
 	// Compute FFT and data block lengths.
@@ -170,7 +226,7 @@ void fft_impulse() {
 	// now we can FFT the impulse
 	fftw_execute(imp);   
 	
-#endif
+
 }
 
 void fft_filter() {
@@ -230,7 +286,6 @@ void fft_filter() {
 
 
 }
-
 #endif
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
