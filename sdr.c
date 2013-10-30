@@ -90,10 +90,8 @@ int sdr_process(sdr_data_t *sdr) {
 
 	// perform a Hilbert transform with the FFT   
 	fftw_execute(fft->htplan);
-	//bzero(fft->filter, sizeof(fftw_complex)*(size/2)-1);
-	for (i=0; i<size/2; i++) fft->filter[i]=0;
+	bzero(fft->filter, sizeof(fftw_complex));
 	fftw_execute(fft->htbplan);
-	
 
 	filter_iir_process(sdr->filter, sdr->iqSample);
 	// apply some AGC here
