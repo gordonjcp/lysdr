@@ -33,10 +33,6 @@
 #define IS_ALMOST_DENORMAL(f) (fabs(f) < 3.e-34)
 
 static complex delay[D_SIZE];
-static gfloat alpha, w0, b0, b1, b2, a0, a1, a2;
-static gfloat x1r, x2r, y1r, y2r, x1i, x2i, y1i, y2i;
-    
-
 
 static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
@@ -63,18 +59,9 @@ static void make_impulse(complex fir_imp[], float sample_rate, int taps, float b
 	}
 }
 
+
 filter_fir_t *filter_fir_new(int taps, int size) {
 	// create the structure for a new FIR filter
-	
-	w0 = 2 * M_PI * 3400.0/48000.0;
-	alpha = sin(w0)/(2*1.707);
-	b0 = (1-cos(w0))/2;
-	b1 =  1-cos(w0);
-	b2 = (1-cos(w0))/2;
-	a0 = 1 + alpha;
-	a1 = -2*cos(w0);
-	a2 = 1 - alpha;
-	
 	filter_fir_t *filter = malloc(sizeof(filter_fir_t));
 	filter->taps = taps;
 	filter->size = size;
@@ -109,6 +96,32 @@ void filter_fir_set_response(filter_fir_t *filter, int sample_rate, float bw, fl
 		filter->imp_Q[i] = cimag(filter->impulse[i]);
 	} 
 }
+
+void filter_iir_set_response(filter_iir_t *filter, int sample_rate, float cutoff, float q) {
+	// create the coefficients for an IIR filter
+	gfloat w0, alpha;
+	// lowpass
+	w0 = 2 * M_PI * cutoff/sample_rate;
+	alpha = sin(w0)/(2*q);
+	filter->b0 = (1-cos(w0))/2;
+	filter->b1 =  1-cos(w0);
+	filter->b2 = (1-cos(w0))/2;
+	filter->a0 = 1 + alpha;
+	filter->a1 = -2*cos(w0);
+	filter->a2 = 1 - alpha;
+	/*
+	// highpass
+	filter->b0 =  (1 + cos(w0))/2
+    filter->b1 = -(1 + cos(w0))
+    filter->b2 =  (1 + cos(w0))/2
+    filter->a0 =   1 + alpha
+    filter->a1 =  -2*cos(w0)
+    filter->a2 =   1 - alpha
+	*/
+}
+
+
+
 
 void filter_fir_process(filter_fir_t *filter, complex *samples) {
 	// Perform an FIR filter on the data "in place"
@@ -148,7 +161,7 @@ void filter_fir_process(filter_fir_t *filter, complex *samples) {
 
 }
 
-void filter_hilbert(complex *samples, gint taps) {
+void filter_hilbert(gint phase, complex *samples, gint taps) {
 	// Hilbert transform, shamelessly nicked from swh-plugins
 	// taps needs to be a multiple of D_SIZE
 	// returns I and Q, with Q rotated through 90 degrees
@@ -159,7 +172,7 @@ void filter_hilbert(complex *samples, gint taps) {
 	  delay[dptr] = samples[i];
 	  hilb = 0.0f;
 	  for (j = 0; j < NZEROS/2; j++) {
-	    hilb += (-xcoeffs[j] * cimag(delay[(dptr - j*2) & (D_SIZE - 1)]));
+	    hilb += (phase*xcoeffs[j] * cimag(delay[(dptr - j*2) & (D_SIZE - 1)]));
 	  }
 	  samples[i] = creal(delay[(dptr-99)& (D_SIZE-1)]) + I * hilb;
 	  dptr = (dptr + 1) & (D_SIZE - 1);
@@ -167,21 +180,16 @@ void filter_hilbert(complex *samples, gint taps) {
 
 }
 
-void filter_iir_process(filter_fir_t *filter, complex *samples) {
-	
+void filter_iir_process(filter_iir_t *filter, gfloat *samples) {
+	// run a simple biquad IIR filter
 	int i;
-	gfloat yr, yi, x;
+	gfloat y, x;
 
 	for (i = 0; i < filter->size; i++) {
-		x = creal(samples[i]);
-		yr = (b0/a0)*x + (b1/a0)*x1r + (b2/a0)*x2r - (a1/a0)*y1r - (a2/a0)*y2r;
-		y2r = y1r; y1r = yr;
-		x2r = x1r; x1r = x;
-		x = cimag(samples[i]);
-		yi = (b0/a0)*x + (b1/a0)*x1i + (b2/a0)*x2i - (a1/a0)*y1i - (a2/a0)*y2i;
-		y2i = y1i; y1i = yi;
-		x2i = x1i; x1i = x;
-		samples[i] = yr+I*yi;
+		x = samples[i];
+		y = (filter->b0/filter->a0)*x + (filter->b1/filter->a0)*filter->x1 + (filter->b2/filter->a0)*filter->x2 - (filter->a1/filter->a0)*filter->y1 - (filter->a2/filter->a0)*filter->y2;
+		filter->y2 = filter->y1; filter->y1 = y;
+		filter->x2 = filter->x1; filter->x1 = x;
 	}
 }
 

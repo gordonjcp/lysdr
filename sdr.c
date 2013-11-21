@@ -88,15 +88,25 @@ int sdr_process(sdr_data_t *sdr) {
 		sdr->loVector *= sdr->loPhase;
 	}
 
-	// perform a Hilbert transform with the FFT   
-	fftw_execute(fft->htplan);
-	bzero(fft->filter, sizeof(fftw_complex)*size/2);
-	fftw_execute(fft->htbplan);
+	// demodulate by performing a Hilbert transform and then summing real and imaginary
+	switch(sdr->mode) {
+		case SDR_LSB:
+			filter_hilbert(-1, sdr->iqSample, size);
+			break;
+		case SDR_USB:
+			filter_hilbert(1, sdr->iqSample, size);
+			break;
+	} 
+	for (i=0; i < size; i++) {
+		 y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
+		sdr->output[i] = y;
+	}
 
-	filter_iir_process(sdr->filter, sdr->iqSample);
+	//filter_iir_process(sdr->filter, sdr->output);
+	
 	// apply some AGC here
 	for (i = 0; i < size; i++) {
-		y = cabs(sdr->iqSample[i]);
+		y = sdr->output[i];
 		if (agc_peak < y) agc_peak = y;
 
 	}
@@ -114,25 +124,11 @@ int sdr_process(sdr_data_t *sdr) {
 	}
 	y = agc_gain * 0.5; // change volume
 	for (i = 0; i < sdr->size; i++){
-		sdr->iqSample[i] *= y;
+		sdr->output[i] *= y;
 	}
 	
 	sdr->agc_gain = agc_gain;
 
-	switch(sdr->mode) {
-		case SDR_LSB:
-			for (i=0; i < size; i++) {
-			 y = creal(sdr->iqSample[i])+cimag(sdr->iqSample[i]);
-				sdr->output[i] = y;
-			}
-			break;
-		case SDR_USB:
-			for (i=0; i < size; i++) {
-			 y = creal(sdr->iqSample[i])-cimag(sdr->iqSample[i]);
-				sdr->output[i] = y;
-			}
-			break;
-	}  
 }
 
 void fft_setup(sdr_data_t *sdr) {
