@@ -32,13 +32,13 @@
 
 #define IS_ALMOST_DENORMAL(f) (fabs(f) < 3.e-34)
 
-static complex delay[D_SIZE];
+static double complex delay[D_SIZE];
 
-static void make_impulse(complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
+static void make_impulse(double complex fir_imp[], float sample_rate, int taps, float bw, float centre) {
 
 	float K = bw * taps / sample_rate;
 	float w;
-	complex z;
+	double complex z;
 	int k, i=0;
 
 	float tune = 2.0 * M_PI * centre / sample_rate;
@@ -65,7 +65,7 @@ filter_fir_t *filter_fir_new(int taps, int size) {
 	filter_fir_t *filter = malloc(sizeof(filter_fir_t));
 	filter->taps = taps;
 	filter->size = size;
-	filter->impulse = malloc(sizeof(complex)*taps);
+	filter->impulse = malloc(sizeof(double complex)*taps);
 	filter->imp_I = malloc(sizeof(double)*taps);
 	filter->imp_Q = malloc(sizeof(double)*taps);
 	filter->buf_I = malloc(sizeof(double)*taps);
@@ -123,11 +123,11 @@ void filter_iir_set_response(filter_iir_t *filter, int sample_rate, float cutoff
 
 
 
-void filter_fir_process(filter_fir_t *filter, complex *samples) {
+void filter_fir_process(filter_fir_t *filter, double complex *samples) {
 	// Perform an FIR filter on the data "in place"
 	// this routine is slow and has a horrible hack to avoid denormals
 	int i, j, k;
-	complex c;
+	double complex c;
 	double accI, accQ;
 	double *buf_I = filter->buf_I;
 	double *buf_Q = filter->buf_Q;
@@ -161,7 +161,7 @@ void filter_fir_process(filter_fir_t *filter, complex *samples) {
 
 }
 
-void filter_hilbert(gint phase, complex *samples, gint taps) {
+void filter_hilbert(gint phase, double complex *samples, gint taps) {
 	// Hilbert transform, shamelessly nicked from swh-plugins
 	// taps needs to be a multiple of D_SIZE
 	// returns I and Q, with Q rotated through 90 degrees

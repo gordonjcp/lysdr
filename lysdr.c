@@ -107,10 +107,6 @@ int main(int argc, char *argv[]) {
 
 	printf("lysdr starting\n");
 	
-	// get the Gtk threads support going
-	if(!g_thread_supported())
-		g_thread_init(NULL);
-
 	gdk_threads_init();
 	gdk_threads_enter();
 

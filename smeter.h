@@ -55,6 +55,7 @@ G_END_DECLS
 
 GtkWidget *sdr_smeter_new();
 void sdr_smeter_set_level(SDRSMeter *sm, gdouble value);
+GType sdr_smeter_get_type(void);
 
 #endif /* __SMETER_H */
 

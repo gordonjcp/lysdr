@@ -49,9 +49,9 @@ typedef struct {
 } fft_data_t;
 
 typedef struct {
-	complex *iqSample;  // the array of incoming samples
-	complex loVector;   // local oscillator vector
-	complex loPhase;	// local oscillator phase angle (sets tuning)
+	double complex *iqSample;  // the array of incoming samples
+	double complex loVector;   // local oscillator vector
+	double complex loPhase;	// local oscillator phase angle (sets tuning)
 	gdouble *output;	 // pointer to output samples
 
 	GtkObject *tuning;  // adjustment for tuning
@@ -66,7 +66,7 @@ typedef struct {
 	filter_fir_t *filter;
 
 	// things to keep track of between callbacks
-	complex dc_remove;
+	double complex dc_remove;
 	gfloat agc_gain;
 	gfloat agc_speed;
 	// jack parameters
@@ -76,6 +76,9 @@ typedef struct {
 
 sdr_data_t *sdr_new(gint fft_size);
 int sdr_process(sdr_data_t *sdr);
+void sdr_destroy(sdr_data_t *sdr);
+void fft_setup(sdr_data_t *sdr);
+void fft_teardown(sdr_data_t *sdr);
 #endif
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

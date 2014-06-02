@@ -21,6 +21,7 @@
 */
 
 #include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <gtk/gtk.h>
@@ -156,8 +157,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
 
     sdr_waterfall_set_scale(widget, wf->centre_freq);
 
-    g_assert(priv->mutex == NULL);
-    priv->mutex = g_mutex_new();
+    g_mutex_init(&priv->mutex);
     gtk_adjustment_value_changed(wf->tuning);
 }
 
@@ -170,7 +170,7 @@ static void sdr_waterfall_unrealize(GtkWidget *widget) {
     if (wf->scale) // we might not have a scale
         g_object_unref(wf->scale);
 
-    g_mutex_free(priv->mutex);
+    g_mutex_clear(&priv->mutex);
     GTK_WIDGET_CLASS(parent_class)->unrealize(widget);
 }
 
@@ -208,7 +208,7 @@ static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
-GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size) {
+SDRWaterfall *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkAdjustment *hp_tune, gint sample_rate, gint fft_size) {
     // call this with three Adjustments, for tuning, lowpass filter and highpass filter
     // the tuning Adjustment should have its upper and lower bounds set to half the sample rate
     SDRWaterfall *wf;
@@ -233,7 +233,7 @@ GtkWidget *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune, GtkA
         G_CALLBACK (sdr_waterfall_lowpass_changed), wf);
     g_signal_connect (hp_tune, "value-changed",
         G_CALLBACK (sdr_waterfall_highpass_changed), wf);
-    return GTK_WIDGET(wf);
+    return wf;
 
 }
 
@@ -390,6 +390,7 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
         gtk_widget_queue_draw(widget);
         priv->prelight = prelight;
     }
+    return TRUE;
 }
 
 static gboolean sdr_waterfall_button_press(GtkWidget *widget, GdkEventButton *event) {
@@ -421,6 +422,7 @@ static gboolean sdr_waterfall_button_press(GtkWidget *widget, GdkEventButton *ev
             gtk_widget_queue_draw(widget);
             break;
     }
+    return TRUE;
 }
 
 static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *event) {
@@ -458,6 +460,8 @@ static gboolean sdr_waterfall_scroll(GtkWidget *widget, GdkEventScroll *event) {
         case GDK_SCROLL_DOWN:
             tuning += step;
             break;
+        default:
+            break;
     }
 
     sdr_waterfall_set_tuning(wf, tuning);
@@ -491,12 +495,12 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_rectangle(cr, wf_rectangle(0, 0, width, height));
     cairo_clip(cr);
 
-    g_mutex_lock(priv->mutex);
+    g_mutex_lock(&priv->mutex);
         gdk_cairo_set_source_pixmap(cr, wf->pixmap, wf_remap(0, -priv->scroll_pos));
         cairo_paint(cr);
         gdk_cairo_set_source_pixmap(cr, wf->pixmap, wf_remap(0, height-priv->scroll_pos));
 	cairo_paint(cr);
-    g_mutex_unlock(priv->mutex);
+    g_mutex_unlock(&priv->mutex);
 
     // cursor is translucent when "off", opaque when prelit
     cursor = priv->cursor_pos;
@@ -560,7 +564,7 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
 	(wf->orientation == WF_O_VERTICAL) ? (4*wf->fft_size) : 4
     );
 
-    g_mutex_lock(priv->mutex);
+    g_mutex_lock(&priv->mutex);
 	switch (wf->orientation) {
 	case WF_O_VERTICAL:
 	    cairo_set_source_surface (cr, s_row, 0, priv->scroll_pos);
@@ -570,7 +574,7 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
 	    break;
 	}
     cairo_paint(cr);
-    g_mutex_unlock(priv->mutex);
+    g_mutex_unlock(&priv->mutex);
 
     priv->scroll_pos++;
     if (priv->scroll_pos >= wf->wf_height) priv->scroll_pos = 0;
