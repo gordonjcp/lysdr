@@ -38,7 +38,7 @@ typedef struct {
 
 // FIR filter defs
 typedef struct {
-	complex *impulse;
+	double complex *impulse;
 	double *buf_I;
 	double *buf_Q;
 	double *imp_I;
@@ -51,8 +51,8 @@ typedef struct {
 filter_fir_t *filter_fir_new(int taps, int size);
 void filter_fir_destroy(filter_fir_t *filter);
 void filter_fir_set_response(filter_fir_t *filter, int sample_rate, float bw, float centre);
-void filter_fir_process(filter_fir_t *filter, complex *samples);
-void filter_hilbert(gint phase, complex *samples, gint taps);
+void filter_fir_process(filter_fir_t *filter, double complex *samples);
+void filter_hilbert(gint phase, double complex *samples, gint taps);
 #endif
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

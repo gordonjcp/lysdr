@@ -24,7 +24,6 @@
 #include <complex.h> 
 #include <gtk/gtk.h>
 #include <string.h>
-
 #include "sdr.h"
 #include "waterfall.h"
 #include "smeter.h"
@@ -34,7 +33,7 @@ extern sdr_data_t *sdr;
 
 // these are global so that the gui_update routine can fiddle with them
 static GtkWidget *label;
-static GtkWidget *wfdisplay;
+static SDRWaterfall *wfdisplay;
 static GtkWidget *meter;
 
 static gboolean gui_update_waterfall(GtkWidget *widget) {
@@ -53,7 +52,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 	// copy the block of samples to a buffer
 	// we can then apply a window function to it
-	memmove(fft->windowed, fft->samples, sizeof(complex)*(sdr->fft_size));
+	memmove(fft->windowed, fft->samples, sizeof(double complex)*(sdr->fft_size));
 
 	// window it
 	for (i=0; i<sdr->fft_size; i++) {
@@ -236,13 +235,13 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
 	switch (SDR_WATERFALL(wfdisplay)->orientation) {
 	case WF_O_VERTICAL:
-		gtk_widget_set_size_request(wfdisplay, sdr->fft_size, 250);
+		gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), sdr->fft_size, 250);
 		break;
 	case WF_O_HORIZONTAL:
-		gtk_widget_set_size_request(wfdisplay, 960, sdr->fft_size);
+		gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), 960, sdr->fft_size);
 		break;
 	}
-	gtk_box_pack_start(GTK_BOX(vbox), wfdisplay, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 	
 	gtk_widget_show_all(mainWindow);

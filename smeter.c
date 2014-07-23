@@ -85,6 +85,7 @@ static gboolean sdr_smeter_expose(GtkWidget *widget, GdkEventExpose *event) {
 	cairo_fill(cr);
 
 	cairo_destroy(cr);
+	return TRUE;
 }
 
 void sdr_smeter_set_level(SDRSMeter *sm, gdouble level) {

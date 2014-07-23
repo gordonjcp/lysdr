@@ -93,8 +93,9 @@ int audio_start(sdr_data_t *sdr) {
 	// save some info in the SDR
 	sdr->size = jack_get_buffer_size(client);
 	sdr->sample_rate = jack_get_sample_rate(client);
-	sdr->iqSample = g_new0(complex, sdr->size);
+	sdr->iqSample = g_new0(double complex, sdr->size);
 	sdr->output = g_new0(double, sdr->size);
+	return 0;
 }
 
 int audio_stop(sdr_data_t *sdr) {
@@ -104,6 +105,7 @@ int audio_stop(sdr_data_t *sdr) {
 	if (sdr->iqSample) g_free(sdr->iqSample);
 	if (sdr->output) g_free(sdr->output);
 
+	return 0;
 }
 
 int audio_connect(sdr_data_t *sdr, gboolean ci, gboolean co) {
@@ -163,6 +165,7 @@ int audio_connect(sdr_data_t *sdr, gboolean ci, gboolean co) {
 		}
 		free(ports);
 	}
+	return 0;
 }
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
