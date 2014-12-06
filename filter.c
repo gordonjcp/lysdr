@@ -120,9 +120,6 @@ void filter_iir_set_response(filter_iir_t *filter, int sample_rate, float cutoff
 	*/
 }
 
-
-
-
 void filter_fir_process(filter_fir_t *filter, double complex *samples) {
 	// Perform an FIR filter on the data "in place"
 	// this routine is slow and has a horrible hack to avoid denormals
@@ -140,12 +137,9 @@ void filter_fir_process(filter_fir_t *filter, double complex *samples) {
 		c = samples[i];
 		buf_I[index] = creal(c);
 		buf_Q[index] = cimag(c);
-	// flush denormals
-	if (IS_ALMOST_DENORMAL(buf_I[index])) { buf_I[index]=0; }
-	if (IS_ALMOST_DENORMAL(buf_Q[index])) { buf_Q[index]=0; }
-
-
-
+		// flush denormals
+		if (IS_ALMOST_DENORMAL(buf_I[index])) { buf_I[index]=0; }
+		if (IS_ALMOST_DENORMAL(buf_Q[index])) { buf_Q[index]=0; }
 		accI = accQ = 0;
 		j = index;
 		for (k = 0; k < taps; k++) {
@@ -158,7 +152,6 @@ void filter_fir_process(filter_fir_t *filter, double complex *samples) {
 		if (index >= taps) index = 0;
 	}
 	filter->index = index;
-
 }
 
 void filter_hilbert(gint phase, double complex *samples, gint taps) {
