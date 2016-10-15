@@ -127,7 +127,6 @@ int main(int argc, char *argv[]) {
 
 	// define a filter and configure a default shape
 	sdr->filter = filter_fir_new(128, sdr->size);
-	filter_fir_set_response(sdr->filter, sdr->sample_rate, 100, 600);
 
 	// hook up the jack ports and start the client
 	fft_setup(sdr);
@@ -137,7 +136,7 @@ int main(int argc, char *argv[]) {
 
 	gui_display(sdr, horizontal);
 
-	//gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
+	//g_signal_connect(sdr->tuning, "value-changed", G_CALLBACK(tuning_changed), NULL);
 
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
 
