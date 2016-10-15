@@ -24,6 +24,7 @@
 #include <complex.h>
 #include <gtk/gtk.h>
 #include <string.h>
+#include <stdlib.h>
 #include "sdr.h"
 #include "waterfall.h"
 #include "smeter.h"
@@ -74,24 +75,28 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
 		z = fft->out[p];	 // contains the FFT data
-		y=10*cabs(z);
+		y=50*cabs(z);
 		y = (y*filt) + (oldy[i]*(1-filt));
 		oldy[i]=y;
+		//y = (float)rand()/(float)(RAND_MAX);
 		y = CLAMP(y , 0, 1.0);
 		colour = colourmap[(int)(255*y)];
+
+		//colour = colourmap[i%256];
+
 		data[j++] = (colour>>8)&0xff;
 		data[j++] = (colour>>16)&0xff;
 		data[j++] = colour>>24;
 		data[j++] = 255;
 	}
 
-	//sdr_waterfall_update(widget, data);
+	sdr_waterfall_update(widget, data);
 
 	y = (2000-sdr->agc_gain)/2000;
 	if (y<0) y = 0;
 	if (y>1) y = 1;
 	y=y*y;
-	sdr_smeter_set_level(SDR_SMETER(meter), y);
+	//sdr_smeter_set_level(SDR_SMETER(meter), y);
 	return TRUE;
 }
 
@@ -248,7 +253,7 @@ gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 
 	// connect handlers
 	// FIXME - determine minimum update rate from jack latency
-	//g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
 	/*
 	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);

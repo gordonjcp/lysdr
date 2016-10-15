@@ -179,7 +179,48 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
 
     cairo_rectangle(cr, 0, 0, wf->width, wf->wf_height);
     cairo_clip(cr);
-    cairo_set_source_surface(cr, wf->pixels, 0,0);
-    cairo_paint(cr);
 
+    //g_mutex_lock(&priv->mutex);
+    cairo_set_source_surface(cr, wf->pixels, 0, -priv->scroll_pos);
+    cairo_paint(cr);
+    cairo_set_source_surface(cr, wf->pixels, 0, wf->wf_height-priv->scroll_pos);
+	  cairo_paint(cr);
+    //g_mutex_unlock(&priv->mutex);
+}
+
+
+void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
+    // bang a bunch of pixels onto the current row, update and wrap if need be
+      SDRWaterfall *wf;
+      SDRWaterfallPrivate *priv;
+      wf = SDR_WATERFALL(widget);
+      priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
+
+    cairo_t *cr = cairo_create (wf->pixels);
+
+  //  printf("stride=%d\n", cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf->fft_size));
+
+    cairo_surface_t *s_row = cairo_image_surface_create_for_data(row,
+      CAIRO_FORMAT_RGB24, wf->fft_size, 1, 4096);
+
+    //g_mutex_lock(&priv->mutex);
+
+    //cairo_rectangle(cr, 0, 0, wf->width, wf->wf_height);
+
+    unsigned char *data;
+    //cairo_surface_flush(s_row);
+    data = cairo_image_surface_get_data(s_row);
+
+    cairo_set_source_surface (cr, s_row, 0, priv->scroll_pos);
+    //cairo_set_source_rgb(cr, row[0]/256.0, .2, .3);
+    cairo_fill(cr);
+    cairo_paint(cr);
+  //  g_mutex_unlock(&priv->mutex);
+
+    priv->scroll_pos++;
+    if (priv->scroll_pos >= wf->wf_height) priv->scroll_pos = 0;
+
+    cairo_surface_destroy(s_row);
+    cairo_destroy(cr);
+    gtk_widget_queue_draw(widget);
 }
