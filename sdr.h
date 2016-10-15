@@ -54,9 +54,9 @@ typedef struct {
 	double complex loPhase;	// local oscillator phase angle (sets tuning)
 	gdouble *output;	 // pointer to output samples
 
-	GObject *tuning;  // adjustment for tuning
-	GObject *lp_tune; // adjustment for filter lowpass
-	GObject *hp_tune; // adjustment for filter highpass
+	GtkAdjustment *tuning;  // adjustment for tuning
+	GtkAdjustment *lp_tune; // adjustment for filter lowpass
+	GtkAdjustment *hp_tune; // adjustment for filter highpass
 	gint mode;		  // demodulator mode
 	gint centre_freq;
 

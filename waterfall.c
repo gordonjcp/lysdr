@@ -119,7 +119,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
 
-    printf("parent_class is %p, wf is %p\n",parent_class, wf);
+    printf("parent_class is %p, wf is %p\n",GTK_WIDGET_CLASS(parent_class), wf);
 
     // chain up so we even *have* the size;
     //GTK_WIDGET_CLASS(parent_class)->realize(widget);
@@ -132,6 +132,8 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     //width = allocation->width;
     //wf->width = width;
     //wf->wf_height = allocation->height - SCALE_HEIGHT;
+
+    printf("wf->width = %d, wf->wf_height = %d", wf->width, wf->wf_height);
 
     wf->width = width;
 
@@ -156,7 +158,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     sdr_waterfall_set_scale(widget, wf->centre_freq);
 
     g_mutex_init(&priv->mutex);
-    gtk_adjustment_value_changed(wf->tuning);
+  //  gtk_adjustment_value_changed(wf->tuning);
 }
 
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
@@ -562,7 +564,7 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
 
     //return;
-    cairo_t *cr = gdk_cairo_create (wf->pixels);
+    cairo_t *cr = cairo_create (wf->pixels);
     cairo_surface_t *s_row = cairo_image_surface_create_for_data (
         row,
         CAIRO_FORMAT_RGB24,

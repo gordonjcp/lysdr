@@ -180,9 +180,9 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 
 	gtk_window_set_title(GTK_WINDOW(mainWindow), "lysdr");
 	//gtk_signal_connect(GTK_OBJECT(mainWindow), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-		g_signal_connect(mainWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(mainWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-	vbox = gtk_vbox_new(FALSE,1);
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
 	gtk_container_add(GTK_CONTAINER(mainWindow), vbox);
 
 	// tuning scale
@@ -194,7 +194,7 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	sdr->hp_tune = gtk_adjustment_new(300, 25, 3400, 10, 100, 0); // pretty arbitrary limits
 
 	// buttons etc
-	hbox = gtk_hbox_new(FALSE,1);
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
 	// S meter
 	//meter = sdr_smeter_new(NULL);
 	//gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
@@ -224,7 +224,7 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 */
 
-//	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
+	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
 
 
 	// common softrock frequencies
@@ -249,6 +249,10 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 */
+gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), 960, sdr->fft_size);
+gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
+
+
 
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
