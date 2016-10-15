@@ -85,9 +85,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		data[j++] = 255;
 	}
 
-
-
-	sdr_waterfall_update(widget, data);
+	//sdr_waterfall_update(widget, data);
 
 	y = (2000-sdr->agc_gain)/2000;
 	if (y<0) y = 0;
@@ -113,12 +111,12 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
 	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	switch (state) {
 		case 0:
-			sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
-			sdr_waterfall_set_highpass(wfdisplay, 300.0f);
+			//sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+			//sdr_waterfall_set_highpass(wfdisplay, 300.0f);
 			break;
 		case 1:
-			sdr_waterfall_set_lowpass(wfdisplay, 1500.0f);
-			sdr_waterfall_set_highpass(wfdisplay, 500.0f);
+			//sdr_waterfall_set_lowpass(wfdisplay, 1500.0f);
+			//sdr_waterfall_set_highpass(wfdisplay, 500.0f);
 			break;
 	}
 }
@@ -143,7 +141,7 @@ static void mode_changed(GtkWidget *widget, gpointer psdr) {
 		 SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
 			break;
 	}
-	sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
+	//sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
 }
 
 static void agc_changed(GtkWidget *widget, gpointer psdr) {
@@ -224,8 +222,12 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 */
 
-	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
-
+	//wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
+wfdisplay = sdr_waterfall_new(
+	GTK_ADJUSTMENT(sdr->tuning),
+	GTK_ADJUSTMENT(sdr->lp_tune),
+	GTK_ADJUSTMENT(sdr->hp_tune),
+	48000, 1024);
 
 	// common softrock frequencies
 	// 160m =  1844250
@@ -234,22 +236,8 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	// 30m  = 10125000
 	// 20m  = 14075000
 	// 15m  = 21045000
-	/*
-	if (horizontal)
-		SDR_WATERFALL(wfdisplay)->orientation = WF_O_HORIZONTAL;
-	SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
-	switch (SDR_WATERFALL(wfdisplay)->orientation) {
-	case WF_O_VERTICAL:
-		gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), sdr->fft_size, 250);
-		break;
-	case WF_O_HORIZONTAL:
-		gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), 960, sdr->fft_size);
-		break;
-	}
 
-	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
-*/
-gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), 960, sdr->fft_size);
+gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), sdr->fft_size, 300);
 gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 
 
