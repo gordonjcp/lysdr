@@ -246,45 +246,49 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     // draw the tuning cursor
     // cursor bar is translucent when "off", opaque when prelit
     cursor = priv->cursor_pos;
+    cairo_set_source_rgba(cr, 1, 0, 0, 1); // red for tuning cursor
     if (priv->prelight == P_TUNING) {
-        cairo_set_source_rgba(cr, 1, 0, 0, 1); // red for cursor
+        cairo_set_line_width(cr, 3);
     } else {
-        cairo_set_source_rgba(cr, 1, 0, 0, 0.5); // red for cursor
+        cairo_set_line_width(cr, 2);
     }
-    cairo_set_line_width(cr, 2);
     cairo_move_to(cr, 0.5f+cursor, 0); // must be offset by a half-pixel for a single line
     cairo_line_to(cr, 0.5f+cursor, height);
     cairo_stroke(cr);
 
     // draw the filter cursors
     // lowpass
-cairo_set_line_width(cr, 1);
-if (priv->prelight == P_LOWPASS) {
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
-} else  {
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 1);  // yellow for filter "handles"
 
-}
 
-cairo_move_to(cr, 0.5 + priv->lp_pos, 0);
-cairo_line_to(cr, 0.5 + priv->lp_pos, height);
-cairo_stroke(cr);
+    if (priv->prelight == P_LOWPASS) {
+      cairo_set_source_rgba(cr, 1, 1, 0.5, 1);  // yellow for filter "handles"
+      cairo_set_line_width(cr, 2);
+    } else  {
+      cairo_set_source_rgba(cr, 1, 1, 0.5, .75);
+      cairo_set_line_width(cr, 1);
+    }
+    cairo_move_to(cr, 0.5 + priv->lp_pos, 0);
+    cairo_line_to(cr, 0.5 + priv->lp_pos, height);
+    cairo_stroke(cr);
 
-// highpass
-if (priv->prelight == P_HIGHPASS) {
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
-} else  {
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
-}
-cairo_move_to(cr, 0.5 + priv->hp_pos-1, 0);
-cairo_line_to(cr, 0.5 + priv->hp_pos-1, height);
-cairo_stroke(cr);
+    // highpass
+    if (priv->prelight == P_HIGHPASS) {
+      cairo_set_source_rgba(cr, 1, 1, 0.5, 1);
+      cairo_set_line_width(cr, 2);
+    } else  {
+      cairo_set_source_rgba(cr, 1, 1, 0.5, .75);
+      cairo_set_line_width(cr, 1);
+    }
+    cairo_move_to(cr, 0.5 + priv->hp_pos-1, 0);
+    cairo_line_to(cr, 0.5 + priv->hp_pos-1, height);
+    cairo_stroke(cr);
 
-// filter cursor
-cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
-cairo_rectangle(cr, MIN(priv->hp_pos, priv->lp_pos), 0,
-     abs(priv->lp_pos - priv->hp_pos), height);
-cairo_fill(cr);
+    // filter cursor
+    cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.5);
+    cairo_rectangle(cr, MIN(priv->hp_pos, priv->lp_pos), 0,
+      abs(priv->lp_pos - priv->hp_pos), height);
+    cairo_fill(cr);
 }
 
 
