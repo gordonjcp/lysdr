@@ -144,11 +144,11 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     // maybe we don't need it, since we poke the tuning adjustment
     priv->cursor_pos = width * (0.5+(gtk_adjustment_get_value(wf->tuning)/wf->sample_rate));
     // FIXME investigate cairo surfaces and speed
-    wf->pixmap = gdk_pixmap_new(gtk_widget_get_window(widget), wf_swap(width, wf->wf_height), -1);
+    wf->pixels = gdk_pixmap_new(gtk_widget_get_window(widget), wf_swap(width, wf->wf_height), -1);
 
     // clear the waterfall pixmap to black
     // not sure if there's a better way to do this
-    cr = gdk_cairo_create (wf->pixmap);
+    cr = gdk_cairo_create (wf->pixels);
     //cairo_rectangle(cr, 0, 0, wf_remap(width, wf->wf_height));
     cairo_rectangle(cr, wf_rectangle(0, 0, width, wf->wf_height));
     cairo_set_source_rgb(cr, 0, 0, 0);
@@ -166,7 +166,7 @@ static void sdr_waterfall_unrealize(GtkWidget *widget) {
     SDRWaterfall *wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
 
-    g_object_unref(wf->pixmap); // we should definitely have a pixmap
+    g_object_unref(wf->pixels); // we should definitely have a pixmap
     if (wf->scale) // we might not have a scale
         g_object_unref(wf->scale);
 
@@ -496,9 +496,9 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
     cairo_clip(cr);
 
     g_mutex_lock(&priv->mutex);
-        gdk_cairo_set_source_pixmap(cr, wf->pixmap, wf_remap(0, -priv->scroll_pos));
+        gdk_cairo_set_source_pixmap(cr, wf->pixels, wf_remap(0, -priv->scroll_pos));
         cairo_paint(cr);
-        gdk_cairo_set_source_pixmap(cr, wf->pixmap, wf_remap(0, height-priv->scroll_pos));
+        gdk_cairo_set_source_pixmap(cr, wf->pixels, wf_remap(0, height-priv->scroll_pos));
 	cairo_paint(cr);
     g_mutex_unlock(&priv->mutex);
 
@@ -556,7 +556,7 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
 
     //return;
-    cairo_t *cr = gdk_cairo_create (wf->pixmap);
+    cairo_t *cr = gdk_cairo_create (wf->pixels);
     cairo_surface_t *s_row = cairo_image_surface_create_for_data (
         row,
         CAIRO_FORMAT_RGB24,
