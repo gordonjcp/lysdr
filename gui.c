@@ -116,12 +116,12 @@ static void filter_clicked(GtkWidget *widget, gpointer psdr) {
 	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	switch (state) {
 		case 0:
-			//sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
-			//sdr_waterfall_set_highpass(wfdisplay, 300.0f);
+			sdr_waterfall_set_lowpass(wfdisplay, 3400.0f);
+			sdr_waterfall_set_highpass(wfdisplay, 300.0f);
 			break;
 		case 1:
-			//sdr_waterfall_set_lowpass(wfdisplay, 1500.0f);
-			//sdr_waterfall_set_highpass(wfdisplay, 500.0f);
+			sdr_waterfall_set_lowpass(wfdisplay, 1200.0f);
+			sdr_waterfall_set_highpass(wfdisplay, 500.0f);
 			break;
 	}
 }
@@ -212,13 +212,14 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	label = gtk_label_new (NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 	gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
-/*
-	filter_combo = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Wide");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Narrow");
+
+	filter_combo = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(filter_combo), NULL, "Wide");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(filter_combo), NULL, "Narrow");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(filter_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), filter_combo, TRUE, TRUE, 0);
 
+/*
 	mode_combo = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "LSB");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "USB");
@@ -227,15 +228,7 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 */
 
 	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
-/*
-wfdisplay = sdr_waterfall_new(
-	GTK_ADJUSTMENT(sdr->tuning),
-	GTK_ADJUSTMENT(sdr->lp_tune),
-	GTK_ADJUSTMENT(sdr->hp_tune),
-	48000, 1024);*/
-
-	filter_changed(wfdisplay, sdr);
-
+	filter_changed(GTK_WIDGET(wfdisplay), sdr);
 
 	// common softrock frequencies
 	// 160m =  1844250
@@ -245,10 +238,8 @@ wfdisplay = sdr_waterfall_new(
 	// 20m  = 14075000
 	// 15m  = 21045000
 
-gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), sdr->fft_size, 300);
-gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
-
-
+	gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), sdr->fft_size, 300);
+	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
@@ -261,9 +252,9 @@ gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 	g_signal_connect(sdr->tuning, "value-changed", G_CALLBACK(tuning_changed), sdr);
 	g_signal_connect(sdr->lp_tune, "value-changed", G_CALLBACK(filter_changed), sdr);
 	g_signal_connect(sdr->hp_tune, "value-changed", G_CALLBACK(filter_changed), sdr);
-/*
-	gtk_signal_connect(GTK_OBJECT(filter_combo), "changed", G_CALLBACK(filter_clicked), sdr);
-	gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
+
+	g_signal_connect(filter_combo, "changed", G_CALLBACK(filter_clicked), sdr);
+/*	gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(agc_combo), "changed", G_CALLBACK(agc_changed), sdr);
 	*/
 }
