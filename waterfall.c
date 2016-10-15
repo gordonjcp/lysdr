@@ -61,11 +61,11 @@ void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
 static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
     GObjectClass *gobject_class = G_OBJECT_CLASS (class);
-    parent_class = gtk_type_class(GTK_TYPE_DRAWING_AREA);
+    //parent_class = gtk_type_class(GTK_TYPE_DRAWING_AREA);
 
     widget_class->realize = sdr_waterfall_realize;
     widget_class->unrealize = sdr_waterfall_unrealize; // hate american spelling
-    widget_class->expose_event = sdr_waterfall_expose;
+    //widget_class->expose_event = sdr_waterfall_expose;
     widget_class->button_press_event = sdr_waterfall_button_press;
     widget_class->button_release_event = sdr_waterfall_button_release;
     widget_class->motion_notify_event = sdr_waterfall_motion_notify;
@@ -130,12 +130,12 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     // do it the non-Gtk3-friendly way
     switch (wf->orientation) {
     case WF_O_VERTICAL:
-	width = widget->allocation.width;
-	wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
+	//width = widget->allocation.width;
+	//wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
 	break;
     case WF_O_HORIZONTAL:
-	width = widget->allocation.height;
-	wf->wf_height = widget->allocation.width - SCALE_WIDTH;
+	//width = widget->allocation.height;
+	//wf->wf_height = widget->allocation.width - SCALE_WIDTH;
 	break;
     }
     wf->width = width;

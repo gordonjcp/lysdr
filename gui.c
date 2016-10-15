@@ -1,9 +1,9 @@
 /*  lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
-	
+
 	gui.c
 	set up and draw the GUI elements
-	
+
 	This file is part of lysdr.
 
 	lysdr is free software: you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 */
 
 #include <math.h>
-#include <complex.h> 
+#include <complex.h>
 #include <gtk/gtk.h>
 #include <string.h>
 #include "sdr.h"
@@ -40,9 +40,9 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 
 	int i, j, p, hi;
 	gdouble y;
-	
+
 	gdouble wi, wq;
-	
+
 	fftw_complex z;
 	guchar data[sdr->fft_size*4];
 	static gfloat oldy[8192];
@@ -62,18 +62,18 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		//wi = 0.42 - 0.5 * cos(2.0f * M_PI * i / sdr->fft_size) + 0.08 * cos(4.0f * M_PI * i / sdr->fft_size);
 		fft->windowed[i] *= wi + I * wi;
 	}
-	
+
 	fftw_execute(fft->plan);
 	fft->status=EMPTY;
 	fft->index=0;
 
 	hi = sdr->fft_size/2;
 	j=0;
-	
+
 	for(i=0; i<sdr->fft_size; i++) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
-		z = fft->out[p];	 // contains the FFT data 
+		z = fft->out[p];	 // contains the FFT data
 		y=10*cabs(z);
 		y = (y*filt) + (oldy[i]*(1-filt));
 		oldy[i]=y;
@@ -82,10 +82,10 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		data[j++] = (colour>>8)&0xff;
 		data[j++] = (colour>>16)&0xff;
 		data[j++] = colour>>24;
-		data[j++] = 255;			
-	} 
+		data[j++] = 255;
+	}
 
-	
+
 
 	sdr_waterfall_update(widget, data);
 
@@ -175,11 +175,12 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	GtkWidget *filter_combo;
 	GtkWidget *mode_combo;
 	GtkWidget *agc_combo;
-	
+
 	float tune_max;
-	
+
 	gtk_window_set_title(GTK_WINDOW(mainWindow), "lysdr");
-	gtk_signal_connect(GTK_OBJECT(mainWindow), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	//gtk_signal_connect(GTK_OBJECT(mainWindow), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+		g_signal_connect(mainWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	vbox = gtk_vbox_new(FALSE,1);
 	gtk_container_add(GTK_CONTAINER(mainWindow), vbox);
@@ -187,8 +188,8 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	// tuning scale
 	tune_max = (float)sdr->sample_rate;
 	sdr->tuning = gtk_adjustment_new(-1, -tune_max/2, tune_max/2, 10, 100, 0);
-	
-	
+
+
 	sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
 	sdr->hp_tune = gtk_adjustment_new(300, 25, 3400, 10, 100, 0); // pretty arbitrary limits
 
@@ -197,19 +198,19 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	// S meter
 	meter = sdr_smeter_new(NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
-
+/*
 	agc_combo = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Fast");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Slow");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Lock");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(agc_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), agc_combo, TRUE, TRUE, 0);
-
+*/
 	// VFO readout
 	label = gtk_label_new (NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 	gtk_label_set_markup(GTK_LABEL(label), "<tt>VFO</tt>");
-
+/*
 	filter_combo = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Wide");
 	gtk_combo_box_append_text(GTK_COMBO_BOX(filter_combo), "Narrow");
@@ -221,7 +222,7 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "USB");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
-
+*/
 	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
 	// common softrock frequencies
 	// 160m =  1844250
@@ -243,19 +244,20 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	}
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
-	
+
 	gtk_widget_show_all(mainWindow);
 
 	// connect handlers
 	// FIXME - determine minimum update rate from jack latency
 	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+	/*
 	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(filter_combo), "changed", G_CALLBACK(filter_clicked), sdr);
 	gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(agc_combo), "changed", G_CALLBACK(agc_changed), sdr);
+	*/
 }
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */
-

@@ -1,8 +1,8 @@
 /*  lysdr Software Defined Radio
     (C) 2010-2011 Gordon JC Pearce MM0YEQ and others
-    
+
     waterfall.h
-    
+
 	This file is part of lysdr.
 
 	lysdr is free software: you can redistribute it and/or modify
@@ -47,13 +47,14 @@ enum {
 
 struct _SDRWaterfall {
     GtkDrawingArea parent;
-    
+
     GtkAdjustment *tuning;
     GtkAdjustment *lp_tune;
     GtkAdjustment *hp_tune;
 
-    GdkPixmap *pixmap;
-    GdkPixmap *scale;
+    GdkPixbuf *pixmap;
+    GdkPixbuf *scale;
+
     cairo_surface_t *pix;
 
     gint mode;
@@ -61,7 +62,7 @@ struct _SDRWaterfall {
 
     gint width;
     gint wf_height;
-    
+
     gint sample_rate;
     gint centre_freq;
     gint fft_size;

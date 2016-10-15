@@ -1,9 +1,9 @@
 /*  lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
-	
+
 	lysdr.c
 	A simple software-defined radio for Linux
-	
+
 	This file is part of lysdr.
 
 	lysdr is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ static gint centre_freq = 0;
 static gint fft_size = 1024;
 static gchar *tuning_hook = NULL;
 
-static GOptionEntry opts[] = 
+static GOptionEntry opts[] =
 {
 	{ "horizontal", 'H', 0, G_OPTION_ARG_NONE, &horizontal, "Horizontal waterfall", NULL },
 	{ "ci", 0, 0, G_OPTION_ARG_NONE, &connect_input, "Autoconnect input to first two jack capture ports", NULL },
@@ -106,12 +106,13 @@ int main(int argc, char *argv[]) {
 
 
 	printf("lysdr starting\n");
-	
-	gdk_threads_init();
-	gdk_threads_enter();
+
+	// gtk3 remove threads, see how badly things go wrong
+	//gdk_threads_init();
+	//gdk_threads_enter();
 
 	gtk_init(&argc, &argv);
-	
+
 	context = g_option_context_new ("-");
 	g_option_context_add_main_entries (context, opts, NULL);
 	g_option_context_add_group (context, gtk_get_option_group (TRUE));
@@ -127,16 +128,16 @@ int main(int argc, char *argv[]) {
 	// define a filter and configure a default shape
 	sdr->filter = filter_fir_new(64, sdr->size);
 	filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
-	
-	// hook up the jack ports and start the client  
+
+	// hook up the jack ports and start the client
 	fft_setup(sdr);
 	audio_connect(sdr, connect_input, connect_output);
-	
+
 	sdr->centre_freq = centre_freq;
 
 	gui_display(sdr, horizontal);
 
-	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
+	//gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), NULL);
 
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);
 
@@ -144,9 +145,9 @@ int main(int argc, char *argv[]) {
 	audio_stop(sdr);
 	filter_fir_destroy(sdr->filter);
 	fft_teardown(sdr);
-	
+
 	sdr_destroy(sdr);
-	gdk_threads_leave();
+	//gdk_threads_leave();
 }
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

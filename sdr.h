@@ -1,8 +1,8 @@
 /*  lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
-	
+
 	sdr.h
-	
+
 	This file is part of lysdr.
 
 	lysdr is free software: you can redistribute it and/or modify
@@ -54,15 +54,15 @@ typedef struct {
 	double complex loPhase;	// local oscillator phase angle (sets tuning)
 	gdouble *output;	 // pointer to output samples
 
-	GtkObject *tuning;  // adjustment for tuning
-	GtkObject *lp_tune; // adjustment for filter lowpass
-	GtkObject *hp_tune; // adjustment for filter highpass
+	GObject *tuning;  // adjustment for tuning
+	GObject *lp_tune; // adjustment for filter lowpass
+	GObject *hp_tune; // adjustment for filter highpass
 	gint mode;		  // demodulator mode
 	gint centre_freq;
 
 	fft_data_t *fft;
 	gint fft_size;
-	
+
 	filter_fir_t *filter;
 
 	// things to keep track of between callbacks

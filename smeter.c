@@ -1,9 +1,9 @@
 /*  lysdr Software Defined Radio
 	(C) 2010-2011 Gordon JC Pearce MM0YEQ and others
-	
+
 	smeter.c
 	draw a simple signal strength meter
-	
+
 	This file is part of lysdr.
 
 	lysdr is free software: you can redistribute it and/or modify
@@ -31,10 +31,10 @@ static void sdr_smeter_size_request(GtkWidget *widget, GtkRequisition *requisiti
 static void sdr_smeter_class_init (SDRSMeterClass *class) {
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
 	GObjectClass *gobject_class = G_OBJECT_CLASS (class);
-	parent_class = gtk_type_class(GTK_TYPE_DRAWING_AREA);
+	//parent_class = gtk_type_class(GTK_TYPE_DRAWING_AREA);
 
-	widget_class->expose_event = sdr_smeter_expose;
-	widget_class->size_request = sdr_smeter_size_request;
+	//widget_class->expose_event = sdr_smeter_expose;
+	//widget_class->size_request = sdr_smeter_size_request;
 }
 
 static void sdr_smeter_init(SDRSMeter *sm) {
@@ -78,7 +78,7 @@ static gboolean sdr_smeter_expose(GtkWidget *widget, GdkEventExpose *event) {
 
 	// draw bargraph
 	cairo_set_source_rgb(cr, 0.2, 0.4, 0);
-	cairo_rectangle(cr, 4, 4, 255, 4);  
+	cairo_rectangle(cr, 4, 4, 255, 4);
 	cairo_fill(cr);
 	cairo_set_source_rgb(cr, 0.6, 1.0, 0);
 	cairo_rectangle(cr, 4, 4, pos, 4);
