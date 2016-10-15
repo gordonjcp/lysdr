@@ -254,9 +254,9 @@ gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 	// connect handlers
 	// FIXME - determine minimum update rate from jack latency
 	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
-	/*
-	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
-	gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
+
+	g_signal_connect(sdr->tuning, "value-changed", G_CALLBACK(tuning_changed), sdr);
+	/*gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(filter_combo), "changed", G_CALLBACK(filter_clicked), sdr);
 	gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
