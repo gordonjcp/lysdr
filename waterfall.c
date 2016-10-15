@@ -44,6 +44,7 @@ void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value);
 
 static void sdr_waterfall_realize(GtkWidget *widget);
 static void sdr_waterfall_unrealize(GtkWidget *widget);
+static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr);
 
 static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
@@ -52,6 +53,7 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
 
     widget_class->realize = sdr_waterfall_realize;
     widget_class->unrealize = sdr_waterfall_unrealize; // hate american spelling
+    widget_class->draw = sdr_waterfall_draw;
 
 /*
     //widget_class->expose_event = sdr_waterfall_expose;
@@ -106,6 +108,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     // black it out
     cairo_rectangle(cr, 0,0, wf->width, wf->wf_height);
     cairo_set_source_rgb(cr, 0, 0, 0); // solid black
+    cairo_fill(cr);
     cairo_paint(cr);
     cairo_destroy(cr);
 
@@ -175,8 +178,8 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
 
     cairo_rectangle(cr, 0, 0, wf->width, wf->wf_height);
+    cairo_clip(cr);
     cairo_set_source_surface(cr, wf->pixels, 0,0);
-
     cairo_paint(cr);
 
 }
