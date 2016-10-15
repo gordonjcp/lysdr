@@ -182,7 +182,6 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	float tune_max;
 
 	gtk_window_set_title(GTK_WINDOW(mainWindow), "lysdr");
-	//gtk_signal_connect(GTK_OBJECT(mainWindow), "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(mainWindow, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
 	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);

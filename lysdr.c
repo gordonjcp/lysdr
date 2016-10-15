@@ -136,6 +136,7 @@ int main(int argc, char *argv[]) {
 
 	gui_display(sdr, horizontal);
 
+	// this callback doesn't work properly, ask ats about it?
 	//g_signal_connect(sdr->tuning, "value-changed", G_CALLBACK(tuning_changed), NULL);
 
 	gtk_adjustment_set_value(GTK_ADJUSTMENT(sdr->tuning), 0);

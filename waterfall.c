@@ -81,6 +81,9 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     SDRWaterfallPrivate *priv;
     GtkAllocation allocation;
 
+    gint i, j, scale;
+    gchar s[10];
+
     cairo_t *cr;
 
     g_return_if_fail(SDR_IS_WATERFALL(widget));
@@ -91,26 +94,61 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
 
     gtk_widget_get_allocation(widget, &allocation);
+    GtkStyleContext *style = gtk_widget_get_style_context(widget);
+
+
 
     // FIXME make these more consistent
     // wf_height should be the height of the waterfall, with the overall
     // window being larger to allow for the scale
     wf->width = allocation.width;
-    wf->wf_height = allocation.height;
+    wf->wf_height = allocation.height - SCALE_HEIGHT;
 
     // create cairo surfaces for scale and waterfall buffer
     wf->pixels = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
        wf->wf_height);
     cr = cairo_create(wf->pixels);
 
-    // black it out
-    cairo_rectangle(cr, 0,0, wf->width, wf->wf_height);
-    cairo_set_source_rgb(cr, 0, 0, 0); // solid black
-    cairo_fill(cr);
-    cairo_paint(cr);
+    // blank it out
+    gtk_render_background(style, cr, 0, 0, wf->width, wf->wf_height);
+
+    // now create the scale
+    wf->scale = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
+      SCALE_HEIGHT);
+    cr = cairo_create(wf->scale);
+    wf->centre_freq = 7056000;
+
+    // fill in the background
+    gtk_render_background(style, cr, 0, 0, wf->width, SCALE_HEIGHT);
+
+    // draw the scale
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_set_line_width(cr, 2);
+    cairo_move_to(cr, 0, 0);
+  	cairo_line_to(cr, wf->width, 0);
+  	cairo_stroke(cr);
+  	cairo_set_line_width(cr, 1);
+
+    cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    cairo_set_font_size(cr, 12);
+
+    scale = (trunc(wf->sample_rate/SCALE_TICK)+1)*SCALE_TICK;
+    for (i=-scale; i<scale; i+=SCALE_TICK) {  // FIXME hardcoded
+      j = wf->width * (0.5+((double)i/wf->sample_rate));
+      cairo_set_source_rgb(cr, .7, .7, .7);
+      cairo_move_to(cr, 0.5+j, 0);
+      cairo_line_to(cr, 0.5+j, 8);
+      cairo_stroke(cr);
+      cairo_move_to(cr, j-16, 20);
+      cairo_set_source_rgb(cr, 1, 1, 1);
+      sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
+      cairo_show_text(cr,s);
+    }
+
+    // done with the scale context
     cairo_destroy(cr);
 
-    g_mutex_init(&priv->mutex);
+//    g_mutex_init(&priv->mutex);
 }
 
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
@@ -233,6 +271,8 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     unsigned int height = wf->wf_height;
     unsigned int cursor;
 
+    // clip smaller region for scroller
+    cairo_save(cr);
     cairo_rectangle(cr, 0, 0, wf->width, wf->wf_height);
     cairo_clip(cr);
 
@@ -241,6 +281,12 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     cairo_paint(cr);
     cairo_set_source_surface(cr, wf->pixels, 0, wf->wf_height-priv->scroll_pos);
 	  cairo_paint(cr);
+
+    cairo_restore(cr);
+
+    cairo_set_source_surface(cr, wf->scale, 0, wf->wf_height);
+    cairo_paint(cr);
+
     //g_mutex_unlock(&priv->mutex);
 
     // draw the tuning cursor
@@ -258,9 +304,6 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
 
     // draw the filter cursors
     // lowpass
-    cairo_set_source_rgba(cr, 1, 1, 0.5, 1);  // yellow for filter "handles"
-
-
     if (priv->prelight == P_LOWPASS) {
       cairo_set_source_rgba(cr, 1, 1, 0.5, 1);  // yellow for filter "handles"
       cairo_set_line_width(cr, 2);
@@ -291,9 +334,6 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     cairo_fill(cr);
 }
 
-
-
-
 void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
     // bang a bunch of pixels onto the current row, update and wrap if need be
       SDRWaterfall *wf;
@@ -308,19 +348,9 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
     cairo_surface_t *s_row = cairo_image_surface_create_for_data(row,
       CAIRO_FORMAT_RGB24, wf->fft_size, 1, 4096);
 
-    //g_mutex_lock(&priv->mutex);
-
-    //cairo_rectangle(cr, 0, 0, wf->width, wf->wf_height);
-
-    unsigned char *data;
-    //cairo_surface_flush(s_row);
-    data = cairo_image_surface_get_data(s_row);
-
     cairo_set_source_surface (cr, s_row, 0, priv->scroll_pos);
-    //cairo_set_source_rgb(cr, row[0]/256.0, .2, .3);
     cairo_fill(cr);
     cairo_paint(cr);
-  //  g_mutex_unlock(&priv->mutex);
 
     priv->scroll_pos++;
     if (priv->scroll_pos >= wf->wf_height) priv->scroll_pos = 0;
