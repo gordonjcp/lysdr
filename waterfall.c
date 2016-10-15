@@ -112,13 +112,19 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     gint i, j, scale, width;
     char s[10];
 
+    printf("in realize\n");
+
     g_return_if_fail(SDR_IS_WATERFALL(widget));
 
     wf = SDR_WATERFALL(widget);
     SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
 
+    printf("parent_class is %p, wf is %p\n",parent_class, wf);
+
     // chain up so we even *have* the size;
-    GTK_WIDGET_CLASS(parent_class)->realize(widget);
+    //GTK_WIDGET_CLASS(parent_class)->realize(widget);
+
+
 
     // save width and height to clamp rendering size
     // this just segfaults

@@ -196,8 +196,8 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	// buttons etc
 	hbox = gtk_hbox_new(FALSE,1);
 	// S meter
-	meter = sdr_smeter_new(NULL);
-	gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
+	//meter = sdr_smeter_new(NULL);
+	//gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
 /*
 	agc_combo = gtk_combo_box_new_text();
 	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Fast");
@@ -223,7 +223,10 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 */
-	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
+
+//	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
+
+
 	// common softrock frequencies
 	// 160m =  1844250
 	// 80m  =  3528000
@@ -231,6 +234,7 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	// 30m  = 10125000
 	// 20m  = 14075000
 	// 15m  = 21045000
+	/*
 	if (horizontal)
 		SDR_WATERFALL(wfdisplay)->orientation = WF_O_HORIZONTAL;
 	SDR_WATERFALL(wfdisplay)->centre_freq = sdr->centre_freq;
@@ -242,14 +246,17 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 		gtk_widget_set_size_request(GTK_WIDGET(wfdisplay), 960, sdr->fft_size);
 		break;
 	}
+
 	gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
+*/
+
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
 	gtk_widget_show_all(mainWindow);
 
 	// connect handlers
 	// FIXME - determine minimum update rate from jack latency
-	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+	//g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
 	/*
 	gtk_signal_connect(GTK_OBJECT(sdr->tuning), "value-changed", G_CALLBACK(tuning_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
