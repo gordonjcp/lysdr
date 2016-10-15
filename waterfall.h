@@ -52,8 +52,8 @@ struct _SDRWaterfall {
     GtkAdjustment *lp_tune;
     GtkAdjustment *hp_tune;
 
-    GdkPixbuf *pixels;
-    GdkPixbuf *scale;
+    cairo_surface_t *pixels;
+    cairo_surface_t *scale;
 
     cairo_surface_t *pix;
 

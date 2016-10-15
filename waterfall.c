@@ -127,28 +127,20 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     //wf->width = width;
     //wf->wf_height = allocation->height - SCALE_HEIGHT;
 
-    // do it the non-Gtk3-friendly way
-    switch (wf->orientation) {
-    case WF_O_VERTICAL:
-	//width = widget->allocation.width;
-	//wf->wf_height = widget->allocation.height - SCALE_HEIGHT;
-	break;
-    case WF_O_HORIZONTAL:
-	//width = widget->allocation.height;
-	//wf->wf_height = widget->allocation.width - SCALE_WIDTH;
-	break;
-    }
     wf->width = width;
 
     // FIXME we do this a lot, maybe it should be a function
     // maybe we don't need it, since we poke the tuning adjustment
     priv->cursor_pos = width * (0.5+(gtk_adjustment_get_value(wf->tuning)/wf->sample_rate));
     // FIXME investigate cairo surfaces and speed
-    wf->pixels = gdk_pixmap_new(gtk_widget_get_window(widget), wf_swap(width, wf->wf_height), -1);
+    //wf->pixels = gdk_pixmap_new(gtk_widget_get_window(widget), wf_swap(width, wf->wf_height), -1);
+
+    wf->pixels = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width, wf->wf_height);
+    cr = cairo_create (wf->pixels);
 
     // clear the waterfall pixmap to black
     // not sure if there's a better way to do this
-    cr = gdk_cairo_create (wf->pixels);
+
     //cairo_rectangle(cr, 0, 0, wf_remap(width, wf->wf_height));
     cairo_rectangle(cr, wf_rectangle(0, 0, width, wf->wf_height));
     cairo_set_source_rgb(cr, 0, 0, 0);
@@ -246,7 +238,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
     gchar s[10];
 
     wf->centre_freq = centre_freq;
-
+/*
     if (!wf->scale) {
 	switch (wf->orientation) {
 	case WF_O_VERTICAL:
@@ -257,8 +249,12 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 	    break;
 	}
     }
+  */
 
-    cr = gdk_cairo_create(wf->scale);
+    wf->scale = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, SCALE_HEIGHT);
+    cr = cairo_create(wf->scale);
+
+    /*
     switch (wf->orientation) {
     case WF_O_VERTICAL:
 	cairo_rectangle(cr, 0, 0, width, SCALE_HEIGHT);
@@ -287,6 +283,7 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 	}
 	break;
     case WF_O_HORIZONTAL:
+    */
 	cairo_rectangle(cr, 0, 0, SCALE_WIDTH, width);
 	cairo_clip(cr);
 
@@ -311,8 +308,9 @@ void sdr_waterfall_set_scale(GtkWidget *widget, gint centre_freq) {
 	    sprintf(s, "%4.3f", (wf->centre_freq/1000000.0f)+(i/1000000.0f));
 	    cairo_show_text(cr,s);
 	}
+  /*
 	break;
-    }
+}*/
     cairo_destroy(cr);
 
 }
@@ -479,6 +477,7 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 
     cairo_t *cr = gdk_cairo_create (gtk_widget_get_window(widget));
 
+/*
     if (wf->scale) {    // might not have a scale
 	switch (wf->orientation) {
 	case WF_O_VERTICAL:
@@ -488,17 +487,18 @@ static gboolean sdr_waterfall_expose(GtkWidget *widget, GdkEventExpose *event) {
 	    gdk_cairo_set_source_pixmap(cr, wf->scale, 0, 0);
 	    break;
 	}
+  */
         cairo_paint(cr);
-    }
+    //}
 
     // clip region is waterfall size
     cairo_rectangle(cr, wf_rectangle(0, 0, width, height));
     cairo_clip(cr);
 
     g_mutex_lock(&priv->mutex);
-        gdk_cairo_set_source_pixmap(cr, wf->pixels, wf_remap(0, -priv->scroll_pos));
+      //  gdk_cairo_set_source_pixmap(cr, wf->pixels, wf_remap(0, -priv->scroll_pos));
         cairo_paint(cr);
-        gdk_cairo_set_source_pixmap(cr, wf->pixels, wf_remap(0, height-priv->scroll_pos));
+      //  gdk_cairo_set_source_pixmap(cr, wf->pixels, wf_remap(0, height-priv->scroll_pos));
 	cairo_paint(cr);
     g_mutex_unlock(&priv->mutex);
 
