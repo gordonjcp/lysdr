@@ -128,7 +128,7 @@ static void sdr_waterfall_unrealize(GtkWidget *widget) {
     if (wf->scale) {
       cairo_surface_destroy(wf->scale);
     }
-    
+
     g_mutex_clear(&priv->mutex);
     GTK_WIDGET_CLASS(sdr_waterfall_parent_class)->unrealize(widget);
 
@@ -164,5 +164,19 @@ SDRWaterfall *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune,
     */
 
         return wf;
+
+}
+
+static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
+  SDRWaterfall *wf;
+  SDRWaterfallPrivate *priv;
+
+    wf = SDR_WATERFALL(widget);
+    priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
+
+    cairo_rectangle(cr, 0, 0, wf->width, wf->wf_height);
+    cairo_set_source_surface(cr, wf->pixels, 0,0);
+
+    cairo_paint(cr);
 
 }
