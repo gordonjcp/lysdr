@@ -48,8 +48,6 @@ static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *
 
 static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(class);
-    // GObjectClass *gobject_class = G_OBJECT_CLASS (class);
-    // parent_class = gtk_type_class(GTK_TYPE_DRAWING_AREA);
 
     widget_class->realize = sdr_waterfall_realize;
     widget_class->unrealize = sdr_waterfall_unrealize; // hate american spelling
@@ -59,7 +57,7 @@ static void sdr_waterfall_class_init (SDRWaterfallClass *class) {
 
     widget_class->button_press_event = sdr_waterfall_button_press;
     widget_class->button_release_event = sdr_waterfall_button_release;
-/*    widget_class->motion_notify_event = sdr_waterfall_motion_notify;
+/*
     widget_class->scroll_event = sdr_waterfall_scroll;
 */
     g_type_class_add_private (class, sizeof (SDRWaterfallPrivate));
@@ -137,6 +135,26 @@ static void sdr_waterfall_unrealize(GtkWidget *widget) {
 
 }
 
+
+void sdr_waterfall_filter_cursors(SDRWaterfall *wf) {
+    SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
+    gint width = wf->width;
+
+    // FIXME - work out best place to put the enum
+    // FIXME - use accessors for filters rather than gtk_adjustment_get_value
+    switch(wf->mode) {
+        case 0:
+            priv->lp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->lp_tune)/wf->sample_rate));
+            priv->hp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->hp_tune)/wf->sample_rate));
+            break;
+        case 1:
+            priv->lp_pos = priv->cursor_pos + (width*(gtk_adjustment_get_value(wf->lp_tune)/wf->sample_rate));
+            priv->hp_pos = priv->cursor_pos + (width*(gtk_adjustment_get_value(wf->hp_tune)/wf->sample_rate));
+            break;
+    }
+
+}
+
 static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     // if the tuning adjustment changes, ensure the pointer is recalculated
     SDRWaterfall *wf = SDR_WATERFALL(p);
@@ -147,11 +165,32 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
 
     // need to update the filter positions too
-    //priv->lp_pos = priv->cursor_pos - (width*(wf->lp_tune->value/wf->sample_rate));
-    //priv->hp_pos = priv->cursor_pos - (width*(wf->hp_tune->value/wf->sample_rate));
-    //sdr_waterfall_filter_cursors(wf);
+    priv->lp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->lp_tune)/wf->sample_rate));
+    priv->hp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->hp_tune)/wf->sample_rate));
+    sdr_waterfall_filter_cursors(wf);
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
+
+static void sdr_waterfall_lowpass_changed(GtkWidget *widget, gpointer *p) {
+    SDRWaterfall *wf = SDR_WATERFALL(p);
+    SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
+    int width = wf->width;
+    gdouble value = gtk_adjustment_get_value(wf->lp_tune);
+    sdr_waterfall_filter_cursors(wf);
+    priv->lp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
+    gtk_widget_queue_draw(GTK_WIDGET(wf));
+}
+
+static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
+    SDRWaterfall *wf = SDR_WATERFALL(p);
+    SDRWaterfallPrivate *priv = SDR_WATERFALL_GET_PRIVATE(wf);
+    int width = wf->width;
+    gdouble value = gtk_adjustment_get_value(wf->hp_tune);
+    sdr_waterfall_filter_cursors(wf);
+    priv->hp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
+    gtk_widget_queue_draw(GTK_WIDGET(wf));
+}
+
 
 
 SDRWaterfall *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune,
@@ -176,13 +215,10 @@ SDRWaterfall *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune,
         // signals for when the adjustments change
         g_signal_connect (tuning, "value-changed",
             G_CALLBACK (sdr_waterfall_tuning_changed), wf);
-/*        g_signal_connect (lp_tune, "value-changed",
+        g_signal_connect (lp_tune, "value-changed",
             G_CALLBACK (sdr_waterfall_lowpass_changed), wf);
         g_signal_connect (hp_tune, "value-changed",
             G_CALLBACK (sdr_waterfall_highpass_changed), wf);
-
-    */
-
         return wf;
 
 }
@@ -220,7 +256,35 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     cairo_line_to(cr, 0.5f+cursor, height);
     cairo_stroke(cr);
 
+    // draw the filter cursors
+    // lowpass
+cairo_set_line_width(cr, 1);
+if (priv->prelight == P_LOWPASS) {
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
+} else  {
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
 
+}
+
+cairo_move_to(cr, 0.5 + priv->lp_pos, 0);
+cairo_line_to(cr, 0.5 + priv->lp_pos, height);
+cairo_stroke(cr);
+
+// highpass
+if (priv->prelight == P_HIGHPASS) {
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.75);
+} else  {
+    cairo_set_source_rgba(cr, 1, 1, 0.5, 0.25);
+}
+cairo_move_to(cr, 0.5 + priv->hp_pos-1, 0);
+cairo_line_to(cr, 0.5 + priv->hp_pos-1, height);
+cairo_stroke(cr);
+
+// filter cursor
+cairo_set_source_rgba(cr, 0.5, 0.5, 0, 0.25);
+cairo_rectangle(cr, MIN(priv->hp_pos, priv->lp_pos), 0,
+     abs(priv->lp_pos - priv->hp_pos), height);
+cairo_fill(cr);
 }
 
 
@@ -312,7 +376,7 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
             offset = x - priv->cursor_pos;
         }
         value = ((float)offset/width)*wf->sample_rate;
-        //sdr_waterfall_set_lowpass(wf, (float)value);
+        sdr_waterfall_set_lowpass(wf, (float)value);
         prelight = P_LOWPASS;
     }
 
@@ -323,7 +387,7 @@ static gboolean sdr_waterfall_motion_notify (GtkWidget *widget, GdkEventMotion *
             offset = x - priv->cursor_pos;
         }
         value = ((float)offset/width)*wf->sample_rate;
-        //sdr_waterfall_set_highpass(wf, (float)value);
+        sdr_waterfall_set_highpass(wf, (float)value);
         prelight = P_HIGHPASS;
     }
 
@@ -389,4 +453,12 @@ static gboolean sdr_waterfall_button_release(GtkWidget *widget, GdkEventButton *
 // accessor functions
 void sdr_waterfall_set_tuning(SDRWaterfall *wf, gdouble value) {
     gtk_adjustment_set_value(wf->tuning, value);
+}
+void sdr_waterfall_set_lowpass(SDRWaterfall *wf, gdouble value) {
+    gtk_adjustment_set_value(wf->lp_tune, value);
+    gtk_adjustment_set_upper(wf->hp_tune, value);
+}
+void sdr_waterfall_set_highpass(SDRWaterfall *wf, gdouble value) {
+    gtk_adjustment_set_value(wf->hp_tune, value);
+    gtk_adjustment_set_lower(wf->lp_tune, value);
 }

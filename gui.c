@@ -47,7 +47,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 	fftw_complex z;
 	guchar data[sdr->fft_size*4];
 	static gfloat oldy[8192];
-	gfloat filt = 0.5;
+	gfloat filt = 0.99;
 	gint32 colour;
 	fft_data_t *fft= sdr->fft;
 
@@ -75,7 +75,7 @@ static gboolean gui_update_waterfall(GtkWidget *widget) {
 		p=i;
 		if (p<hi) p=p+hi; else p=p-hi;
 		z = fft->out[p];	 // contains the FFT data
-		y=50*cabs(z);
+		y=10*cabs(z);
 		y = (y*filt) + (oldy[i]*(1-filt));
 		oldy[i]=y;
 		//y = (float)rand()/(float)(RAND_MAX);
@@ -253,11 +253,12 @@ gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(wfdisplay), TRUE, TRUE, 0);
 
 	// connect handlers
 	// FIXME - determine minimum update rate from jack latency
-	g_timeout_add(25,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
+	g_timeout_add(15,  (GSourceFunc)gui_update_waterfall, (gpointer)wfdisplay);
 
 	g_signal_connect(sdr->tuning, "value-changed", G_CALLBACK(tuning_changed), sdr);
-	/*gtk_signal_connect(GTK_OBJECT(sdr->lp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
-	gtk_signal_connect(GTK_OBJECT(sdr->hp_tune), "value-changed", G_CALLBACK(filter_changed), sdr);
+	g_signal_connect(sdr->lp_tune, "value-changed", G_CALLBACK(filter_changed), sdr);
+	g_signal_connect(sdr->hp_tune, "value-changed", G_CALLBACK(filter_changed), sdr);
+/*
 	gtk_signal_connect(GTK_OBJECT(filter_combo), "changed", G_CALLBACK(filter_clicked), sdr);
 	gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
 	gtk_signal_connect(GTK_OBJECT(agc_combo), "changed", G_CALLBACK(agc_changed), sdr);

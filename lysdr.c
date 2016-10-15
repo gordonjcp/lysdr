@@ -126,8 +126,8 @@ int main(int argc, char *argv[]) {
 	audio_start(sdr);
 
 	// define a filter and configure a default shape
-	sdr->filter = filter_fir_new(64, sdr->size);
-	filter_fir_set_response(sdr->filter, sdr->sample_rate, 3100, 1850);
+	sdr->filter = filter_fir_new(128, sdr->size);
+	filter_fir_set_response(sdr->filter, sdr->sample_rate, 100, 600);
 
 	// hook up the jack ports and start the client
 	fft_setup(sdr);

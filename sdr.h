@@ -27,7 +27,7 @@
 #include <fftw3.h>
 #include "filter.h"
 
-#define FIR_SIZE 1024
+#define FIR_SIZE 16
 #define MAX_FIR_LEN 8*4096
 
 enum fft_status {EMPTY,			// fft_data is currently unused
