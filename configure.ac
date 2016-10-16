@@ -31,5 +31,5 @@ dnl Combine the various libs and flags
 CFLAGS="$CFLAGS $GTK3_CFLAGS"
 LIBS="$LIBS $GTK3_LIBS"
 
-AC_CONFIG_FILES(Makefile src/Makefile)
+AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
