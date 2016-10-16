@@ -79,6 +79,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     SDRWaterfall *wf;
     SDRWaterfallPrivate *priv;
     GtkAllocation allocation;
+    GdkWindow *window;
 
     gint i, j, scale;
     gchar s[10];
@@ -95,7 +96,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     gtk_widget_get_allocation(widget, &allocation);
     GtkStyleContext *style = gtk_widget_get_style_context(widget);
 
-
+    window = gtk_widget_get_window(GTK_WIDGET(widget));
 
     // FIXME make these more consistent
     // wf_height should be the height of the waterfall, with the overall
@@ -104,8 +105,15 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     wf->wf_height = allocation.height - SCALE_HEIGHT;
 
     // create cairo surfaces for scale and waterfall buffer
-    priv->pixels = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
-       wf->wf_height);
+#if 1
+    priv->pixels = cairo_image_surface_create(
+        CAIRO_FORMAT_RGB24, wf->width, wf->wf_height
+    );
+#else
+    priv->pixels = gdk_window_create_similar_image_surface(
+        window, CAIRO_FORMAT_RGB24, wf->width, wf->wf_height, 1
+    );
+#endif
     cr = cairo_create(priv->pixels);
 
     // blank it out
@@ -153,7 +161,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
   // any work that needs to be carried out to clean up
   // like we need to deallocate any buffers, cairo surfaces etc
-  
+
   SDRWaterfallPrivate *priv;
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
