@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include "sdr.h"
 #include "waterfall.h"
-#include "smeter.h"
 #include "colourmap.h"
 
 extern sdr_data_t *sdr;
@@ -35,14 +34,14 @@ extern sdr_data_t *sdr;
 // these are global so that the gui_update routine can fiddle with them
 static GtkWidget *label;
 static SDRWaterfall *wfdisplay;
-static GtkWidget *meter;
 
 static gboolean gui_update_waterfall(GtkWidget *widget) {
-
+	// copy the current block of samples to a buffer
+	// calculate the FFT and scale, eventually returning
+	// an array of pixels to paint to the waterfall
+	// FIXME sane variable names, fewer magic numbers
 	int i, j, p, hi;
-	gdouble y;
-
-	gdouble wi, wq;
+	gdouble wi, y;
 
 	fftw_complex z;
 	guchar data[sdr->fft_size*4];
@@ -112,7 +111,9 @@ static void tuning_changed(GtkWidget *widget, gpointer psdr) {
 }
 
 static void filter_clicked(GtkWidget *widget, gpointer psdr) {
-	sdr_data_t *sdr = (sdr_data_t *) psdr;
+	// adjust filter settings in combobox
+
+	// sdr_data_t *sdr = (sdr_data_t *) psdr;	// FIXME needed?
 	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 	switch (state) {
 		case 0:
@@ -133,6 +134,7 @@ static void filter_changed(GtkWidget *widget, gpointer psdr) {
 	filter_fir_set_response(sdr->filter, sdr->sample_rate, highpass-lowpass, lowpass+(highpass-lowpass)/2);
 }
 
+/*
 static void mode_changed(GtkWidget *widget, gpointer psdr) {
 	sdr_data_t *sdr = (sdr_data_t *) psdr;
 	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
@@ -148,7 +150,7 @@ static void mode_changed(GtkWidget *widget, gpointer psdr) {
 	}
 	//sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
 }
-
+*/
 static void agc_changed(GtkWidget *widget, gpointer psdr) {
 	sdr_data_t *sdr = (sdr_data_t *) psdr;
 
@@ -166,17 +168,13 @@ static void agc_changed(GtkWidget *widget, gpointer psdr) {
 	}
 }
 
-void gui_display(sdr_data_t *sdr, gboolean horizontal)
+void gui_display(sdr_data_t *sdr)
 {
 	GtkWidget *mainWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	GtkWidget *waterfall;
 	GtkWidget *vbox;
-	GtkWidget *tuneslider;
 	GtkWidget *hbox;
-	GtkWidget *lpslider;
-	GtkWidget *hpslider;
 	GtkWidget *filter_combo;
-	GtkWidget *mode_combo;
+	//GtkWidget *mode_combo;
 	GtkWidget *agc_combo;
 
 	float tune_max;
@@ -197,17 +195,14 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 
 	// buttons etc
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
-	// S meter
-	//meter = sdr_smeter_new(NULL);
-	//gtk_box_pack_start(GTK_BOX(hbox), meter, FALSE, TRUE, 0);
-/*
-	agc_combo = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Fast");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Slow");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(agc_combo), "Lock");
+
+	agc_combo = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(agc_combo), NULL, "Fast");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(agc_combo), NULL, "Slow");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(agc_combo), NULL, "Lock");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(agc_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), agc_combo, TRUE, TRUE, 0);
-*/
+
 	// VFO readout
 	label = gtk_label_new (NULL);
 	gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
@@ -254,9 +249,8 @@ void gui_display(sdr_data_t *sdr, gboolean horizontal)
 	g_signal_connect(sdr->hp_tune, "value-changed", G_CALLBACK(filter_changed), sdr);
 
 	g_signal_connect(filter_combo, "changed", G_CALLBACK(filter_clicked), sdr);
-/*	gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
-	gtk_signal_connect(GTK_OBJECT(agc_combo), "changed", G_CALLBACK(agc_changed), sdr);
-	*/
+	//gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
+	g_signal_connect(agc_combo, "changed", G_CALLBACK(agc_changed), sdr);
 }
 
 /* vim: set noexpandtab ai ts=4 sw=4 tw=4: */

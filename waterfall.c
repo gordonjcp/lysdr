@@ -28,7 +28,6 @@
 
 #include "waterfall.h"
 
-static GtkWidgetClass *parent_class = NULL;
 G_DEFINE_TYPE (SDRWaterfall, sdr_waterfall, GTK_TYPE_DRAWING_AREA);
 
 /*
@@ -105,17 +104,17 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     wf->wf_height = allocation.height - SCALE_HEIGHT;
 
     // create cairo surfaces for scale and waterfall buffer
-    wf->pixels = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
+    priv->pixels = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
        wf->wf_height);
-    cr = cairo_create(wf->pixels);
+    cr = cairo_create(priv->pixels);
 
     // blank it out
     gtk_render_background(style, cr, 0, 0, wf->width, wf->wf_height);
 
     // now create the scale
-    wf->scale = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
+    priv->scale = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
       SCALE_HEIGHT);
-    cr = cairo_create(wf->scale);
+    cr = cairo_create(priv->scale);
     wf->centre_freq = 7056000;
 
     // fill in the background
@@ -152,20 +151,20 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
 }
 
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
-
-  SDRWaterfall *wf;
+  // any work that needs to be carried out to clean up
+  // like we need to deallocate any buffers, cairo surfaces etc
+  
   SDRWaterfallPrivate *priv;
 
-    wf = SDR_WATERFALL(widget);
     priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
 
     // ensure that the pixel buffer is freed
-    if (wf->pixels) {
-      cairo_surface_destroy(wf->pixels);
+    if (priv->pixels) {
+      cairo_surface_destroy(priv->pixels);
     }
 
-    if (wf->scale) {
-      cairo_surface_destroy(wf->scale);
+    if (priv->scale) {
+      cairo_surface_destroy(priv->scale);
     }
 
     g_mutex_clear(&priv->mutex);
@@ -277,14 +276,14 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     cairo_clip(cr);
 
     //g_mutex_lock(&priv->mutex);
-    cairo_set_source_surface(cr, wf->pixels, 0, -priv->scroll_pos);
+    cairo_set_source_surface(cr, priv->pixels, 0, -priv->scroll_pos);
     cairo_paint(cr);
-    cairo_set_source_surface(cr, wf->pixels, 0, wf->wf_height-priv->scroll_pos);
+    cairo_set_source_surface(cr, priv->pixels, 0, wf->wf_height-priv->scroll_pos);
 	  cairo_paint(cr);
 
     cairo_restore(cr);
 
-    cairo_set_source_surface(cr, wf->scale, 0, wf->wf_height);
+    cairo_set_source_surface(cr, priv->scale, 0, wf->wf_height);
     cairo_paint(cr);
 
     //g_mutex_unlock(&priv->mutex);
@@ -332,6 +331,11 @@ static gboolean sdr_waterfall_draw(GtkWidget *widget, cairo_t *cr) {
     cairo_rectangle(cr, MIN(priv->hp_pos, priv->lp_pos), 0,
       abs(priv->lp_pos - priv->hp_pos), height);
     cairo_fill(cr);
+
+    // return value specifies whether this event is passed to other
+    // handlers - let's return False so that it does get passed on
+    // there's no clear documentation on what to do here
+    return FALSE;
 }
 
 void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
@@ -341,7 +345,7 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
       wf = SDR_WATERFALL(widget);
       priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
 
-    cairo_t *cr = cairo_create (wf->pixels);
+    cairo_t *cr = cairo_create (priv->pixels);
 
   //  printf("stride=%d\n", cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf->fft_size));
 

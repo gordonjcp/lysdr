@@ -17,7 +17,7 @@ def configure(conf):
     conf.check(header_name='math.h')
 
     # set for debugging
-    conf.env.CCFLAGS = ['-O0', '-g3', '-ggdb']
+    conf.env.CCFLAGS = ['-O0', '-g3', '-ggdb', '-Wall']
     #conf.env.CCFLAGS +=  ['-DG_DISABLE_SINGLE_INCLUDES','-DGDK_PIXBUF_DISABLE_SINGLE_INCLUDES', '-DGTK_DISABLE_SINGLE_INCLUDES']
     #conf.env.CCFLAGS +=  ["-DG_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED"]
     #conf.env.CCFLAGS += ["-DGSEAL_ENABLE"]
@@ -31,7 +31,7 @@ def build(bld):
     # the main program
     bld(
         features = 'c cprogram',
-        source = ['lysdr.c', 'sdr.c', 'filter.c', 'audio_jack.c', 'gui.c', 'smeter.c', 'waterfall.c'],
+        source = ['lysdr.c', 'sdr.c', 'filter.c', 'audio_jack.c', 'gui.c', 'waterfall.c'],
         target = 'lysdr',
         uselib = "GTK3 JACK FFTW M",
         includes = '. /usr/include ./waterfall')

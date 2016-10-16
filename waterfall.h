@@ -52,9 +52,6 @@ struct _SDRWaterfall {
     GtkAdjustment *lp_tune;
     GtkAdjustment *hp_tune;
 
-    cairo_surface_t *pixels;
-    cairo_surface_t *scale;
-
     cairo_surface_t *pix;
 
     gint mode;
@@ -77,11 +74,15 @@ struct _SDRWaterfallPrivate {
     gint lp_pos;        // pixel position for lowpass cursor
     gint hp_pos;        // pixel position for highpass cursor
     gint scroll_pos;    // which line the scroller is on
-    gint prelight;
-    gint drag;
-    gint click_pos;
+    gint prelight;      // flag for which item to highlight
+    gint drag;          // flag for tuning drag
+    gint click_pos;     // where we clicked between tuning cursor and filter
     gdouble bandspread;
     GMutex mutex;
+
+    cairo_surface_t *pixels;
+    cairo_surface_t *scale;
+
 };
 
 #define SDR_TYPE_WATERFALL             (sdr_waterfall_get_type ())

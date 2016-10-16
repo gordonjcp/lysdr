@@ -19,7 +19,7 @@
 	You should have received a copy of the GNU General Public License
 	along with lysdr.  If not, see <http://www.gnu.org/licenses/>.
 */
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <jack/jack.h>
@@ -38,11 +38,11 @@ static const char *client_name = "lysdr";
 static int audio_process(jack_nframes_t nframes, void *psdr) {
 	// actually kick off processing the samples
 	jack_default_audio_sample_t *ii, *qq, *L, *R;
-	int i, n;
-	
+	int i;
+
 	sdr_data_t *sdr;
 	sdr = (sdr_data_t *) psdr;	// void* cast back to sdr_data_t*
-	
+
 	// get all four buffers
 	ii = jack_port_get_buffer (I_in, nframes);
 	qq = jack_port_get_buffer (Q_in, nframes);
@@ -51,6 +51,7 @@ static int audio_process(jack_nframes_t nframes, void *psdr) {
 
 	// the SDR expects a bunch of complex samples
 
+  // FIXME definable?
 	for(i = 0; i < nframes; i++) {
 	// uncomment whichever is appropriate
 		sdr->iqSample[i] = ii[i] + I * qq[i]; // I on left
@@ -89,7 +90,7 @@ int audio_start(sdr_data_t *sdr) {
 		client_name = jack_get_client_name(client);
 		fprintf (stderr, "unique name `%s' assigned\n", client_name);
 	}
-	
+
 	// save some info in the SDR
 	sdr->size = jack_get_buffer_size(client);
 	sdr->sample_rate = jack_get_sample_rate(client);
@@ -109,15 +110,15 @@ int audio_stop(sdr_data_t *sdr) {
 }
 
 int audio_connect(sdr_data_t *sdr, gboolean ci, gboolean co) {
-	
+
 	const char **ports;
 	// start processing audio
 	jack_set_process_callback (client, audio_process, sdr);
 	//jack_on_shutdown (client, jack_shutdown, 0);
-	
+
 	I_in = jack_port_register (client, "I input",
 		JACK_DEFAULT_AUDIO_TYPE,
-		JackPortIsInput, 0);	 
+		JackPortIsInput, 0);
 	Q_in = jack_port_register (client, "Q input",
 		JACK_DEFAULT_AUDIO_TYPE,
 		JackPortIsInput, 0);
