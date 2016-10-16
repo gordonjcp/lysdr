@@ -115,8 +115,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
     priv->scale = cairo_image_surface_create(CAIRO_FORMAT_RGB24, wf->width,
       SCALE_HEIGHT);
     cr = cairo_create(priv->scale);
-    wf->centre_freq = 7056000;
-
+    
     // fill in the background
     gtk_render_background(style, cr, 0, 0, wf->width, SCALE_HEIGHT);
 
@@ -223,8 +222,6 @@ static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
     sdr_waterfall_filter_cursors(wf);
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
-
-
 
 SDRWaterfall *sdr_waterfall_new(GtkAdjustment *tuning, GtkAdjustment *lp_tune,
    GtkAdjustment *hp_tune, gint sample_rate, gint fft_size) {

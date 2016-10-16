@@ -218,7 +218,14 @@ void gui_display(sdr_data_t *sdr)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
 
-	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
+	wfdisplay = sdr_waterfall_new(
+		GTK_ADJUSTMENT(sdr->tuning),
+		GTK_ADJUSTMENT(sdr->lp_tune),
+		GTK_ADJUSTMENT(sdr->hp_tune),
+		sdr->sample_rate,
+	sdr->fft_size);
+	wfdisplay->centre_freq = sdr->centre_freq;
+	
 	filter_changed(GTK_WIDGET(wfdisplay), sdr);
 
 	// common softrock frequencies
