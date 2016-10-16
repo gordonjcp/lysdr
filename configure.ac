@@ -16,7 +16,7 @@ AC_PROG_CC
 AC_CHECK_HEADERS([stdlib.h string.h])
 
 # Check for required libraries
-PKG_CHECK_MODULES(GTK3, gtk+-3.0 >= 3.18)
+PKG_CHECK_MODULES(GTK3, gtk+-3.0 >= 3.10)
 AC_SEARCH_LIBS(fftw_malloc, fftw3)
 AC_SEARCH_LIBS(sin, m)
 AC_SEARCH_LIBS(jack_connect, jack)
