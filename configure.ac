@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([lysdr], [0.3], [gordon@gjcp.net])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/filter.h])
 AC_CONFIG_HEADERS([config.h])
 
