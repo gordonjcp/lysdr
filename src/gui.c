@@ -134,7 +134,6 @@ static void filter_changed(GtkWidget *widget, gpointer psdr) {
 	filter_fir_set_response(sdr->filter, sdr->sample_rate, highpass-lowpass, lowpass+(highpass-lowpass)/2);
 }
 
-/*
 static void mode_changed(GtkWidget *widget, gpointer psdr) {
 	sdr_data_t *sdr = (sdr_data_t *) psdr;
 	gint state = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
@@ -148,9 +147,9 @@ static void mode_changed(GtkWidget *widget, gpointer psdr) {
 		 SDR_WATERFALL(wfdisplay)->mode = SDR_USB;
 			break;
 	}
-	//sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay)); // hacky
+	sdr_waterfall_filter_cursors(SDR_WATERFALL(wfdisplay));
 }
-*/
+
 static void agc_changed(GtkWidget *widget, gpointer psdr) {
 	sdr_data_t *sdr = (sdr_data_t *) psdr;
 
@@ -174,7 +173,7 @@ void gui_display(sdr_data_t *sdr)
 	GtkWidget *vbox;
 	GtkWidget *hbox;
 	GtkWidget *filter_combo;
-	//GtkWidget *mode_combo;
+	GtkWidget *mode_combo;
 	GtkWidget *agc_combo;
 
 	float tune_max;
@@ -188,7 +187,6 @@ void gui_display(sdr_data_t *sdr)
 	// tuning scale
 	tune_max = (float)sdr->sample_rate;
 	sdr->tuning = gtk_adjustment_new(-1, -tune_max/2, tune_max/2, 10, 100, 0);
-
 
 	sdr->lp_tune = gtk_adjustment_new(3400, 300, 9000, 10, 100, 0); // pretty arbitrary limits
 	sdr->hp_tune = gtk_adjustment_new(300, 25, 3400, 10, 100, 0); // pretty arbitrary limits
@@ -214,15 +212,20 @@ void gui_display(sdr_data_t *sdr)
 	gtk_combo_box_set_active(GTK_COMBO_BOX(filter_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), filter_combo, TRUE, TRUE, 0);
 
-/*
-	mode_combo = gtk_combo_box_new_text();
-	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "LSB");
-	gtk_combo_box_append_text(GTK_COMBO_BOX(mode_combo), "USB");
+	mode_combo = gtk_combo_box_text_new();
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(mode_combo), NULL, "LSB");
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(mode_combo), NULL, "USB");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(mode_combo), 0);
 	gtk_box_pack_start(GTK_BOX(hbox), mode_combo, TRUE, TRUE, 0);
-*/
 
-	wfdisplay = sdr_waterfall_new(GTK_ADJUSTMENT(sdr->tuning), GTK_ADJUSTMENT(sdr->lp_tune), GTK_ADJUSTMENT(sdr->hp_tune), sdr->sample_rate, sdr->fft_size);
+	wfdisplay = sdr_waterfall_new(
+		GTK_ADJUSTMENT(sdr->tuning),
+		GTK_ADJUSTMENT(sdr->lp_tune),
+		GTK_ADJUSTMENT(sdr->hp_tune),
+		sdr->sample_rate,
+	sdr->fft_size);
+	wfdisplay->centre_freq = sdr->centre_freq;
+	
 	filter_changed(GTK_WIDGET(wfdisplay), sdr);
 
 	// common softrock frequencies
@@ -249,7 +252,7 @@ void gui_display(sdr_data_t *sdr)
 	g_signal_connect(sdr->hp_tune, "value-changed", G_CALLBACK(filter_changed), sdr);
 
 	g_signal_connect(filter_combo, "changed", G_CALLBACK(filter_clicked), sdr);
-	//gtk_signal_connect(GTK_OBJECT(mode_combo), "changed", G_CALLBACK(mode_changed), sdr);
+	g_signal_connect(mode_combo, "changed", G_CALLBACK(mode_changed), sdr);
 	g_signal_connect(agc_combo, "changed", G_CALLBACK(agc_changed), sdr);
 }
 

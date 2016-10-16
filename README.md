@@ -1,10 +1,14 @@
 lysdr - simple software-defined radio
+-------------------------------------
 
-Requirements: gtk, fftw3 and jack, waf to build
+Requirements: gtk3, fftw3 and jack
 
-1. Configure with "./waf configure"
-2. Build with "./waf build"
-3. Run with "./build/lysdr"
+Installing the prerequisites and compiling
+
+    $ sudo apt-get install libgtk-3-dev libfftw3-dev libjack-jackd2-dev
+    $ ./autogen.sh
+    $ ./configure
+    $ make
 
 On startup, lysdr will connect its output to the first two jack physical
 output ports if you pass "--co"
@@ -24,34 +28,17 @@ For the Softrock v6.2 Lite boards, the standard centre frequencies are:
 40m  =  7056000
 30m  = 10125000
 20m  = 14075000
-15m  = 21045000 
+15m  = 21045000
 
 These options may change in a future build.
 
 Example:
-## don't connect anything
-$ ./build/lysdr
 
-## connect both input and output to lysdr
-$ ./build/lysdr --ci --co 
+    ## don't connect anything
+    $ ./build/lysdr
 
-When using lysdr along with an digimodes program such as fldigi, it's
-useful for both programs to know what frequency lysdr is tuned to.
-To automate this, you can specify a tuning hook script with the
---tuning-hook option. When lysdr is tuned to a new frequency, it runs
-the hook script with the following environment variables set:
-
-  LYSDR_FREQ      The frequency lysdr is tuned to, in integer Hz
-  LYSDR_MODE      "LSB" or "USB"
-  LYSDR_CENTRE    The SDR centre frequency, in integer Hz
-  LYSDR_OFFSET    lysdr's local oscillator frequency, in integer Hz
-
-This hook script will update fldigi's idea of the frequency when lysdr
-is retuned:
-
-  #!/bin/sh
-  xmlrpc localhost:7362 rig.set_frequency d/$LYSDR_FREQ >/dev/null 2>&1
-
+    ## connect both input and output to lysdr
+    $ ./build/lysdr --ci --co
 
 Drag the slider to tune the radio.  The number below the slider is the
 frequency offset in Hz from the SDR centre (local oscillator) frequency.
@@ -61,7 +48,6 @@ Drag the sides of the yellow filter bar to adjust the bandpass filter upper and
 lower edges.
 
 There are dropdowns to select locked, fast and slow AGC, wide and narrow filtering
-and USB/LSB demodulation.  There's also a not-very-good S meter.
+and USB/LSB demodulation.
 
 Please report bugs on the github page at https://github.com/gordonjcp/lysdr
-
