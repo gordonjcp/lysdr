@@ -153,7 +153,7 @@ static void sdr_waterfall_realize(GtkWidget *widget) {
 static void sdr_waterfall_unrealize(GtkWidget *widget) {
   // any work that needs to be carried out to clean up
   // like we need to deallocate any buffers, cairo surfaces etc
-  
+
   SDRWaterfallPrivate *priv;
 
     priv = G_TYPE_INSTANCE_GET_PRIVATE(widget, SDR_TYPE_WATERFALL, SDRWaterfallPrivate);
@@ -202,8 +202,6 @@ static void sdr_waterfall_tuning_changed(GtkWidget *widget, gpointer *p) {
     priv->cursor_pos = width * (0.5+(value/wf->sample_rate));
 
     // need to update the filter positions too
-    priv->lp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->lp_tune)/wf->sample_rate));
-    priv->hp_pos = priv->cursor_pos - (width*(gtk_adjustment_get_value(wf->hp_tune)/wf->sample_rate));
     sdr_waterfall_filter_cursors(wf);
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
@@ -214,7 +212,6 @@ static void sdr_waterfall_lowpass_changed(GtkWidget *widget, gpointer *p) {
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->lp_tune);
     sdr_waterfall_filter_cursors(wf);
-    priv->lp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -224,7 +221,6 @@ static void sdr_waterfall_highpass_changed(GtkWidget *widget, gpointer *p) {
     int width = wf->width;
     gdouble value = gtk_adjustment_get_value(wf->hp_tune);
     sdr_waterfall_filter_cursors(wf);
-    priv->hp_pos = priv->cursor_pos - (width*(value/wf->sample_rate));
     gtk_widget_queue_draw(GTK_WIDGET(wf));
 }
 
@@ -349,6 +345,8 @@ void sdr_waterfall_update(GtkWidget *widget, guchar *row) {
 
   //  printf("stride=%d\n", cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, wf->fft_size));
 
+    // FIXME - keep this in priv?  Test speed
+    // FIXME - row stride
     cairo_surface_t *s_row = cairo_image_surface_create_for_data(row,
       CAIRO_FORMAT_RGB24, wf->fft_size, 1, 4096);
 
