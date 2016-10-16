@@ -12,8 +12,7 @@ aclocal.m4
 autom4te.cache/
 configure
 stamp-h1
-src/.deps
-src/Makefile
-src/Makefile.in
-src/lysdr
-src/*.o
+lysdr
+.deps
+.dirstamp
+*.o
