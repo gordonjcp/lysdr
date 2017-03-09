@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/gordonjcp/lysdr.svg?branch=master)](https://travis-ci.org/gordonjcp/lysdr)
+
 lysdr - simple software-defined radio
 -------------------------------------
 
